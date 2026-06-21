@@ -3,31 +3,63 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
-}
-
+html,
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background-color: #09090b; /* zinc-950 */
+  color: #e4e4e7; /* zinc-200 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv11", "ss01", "ss03";
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe area for iOS notch / home indicator */
+.safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+}
+.safe-top {
+  padding-top: max(env(safe-area-inset-top), 0.5rem);
+}
+
+/* Scrollbar tweaks (subtle, mono feel) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm font-medium text-zinc-100 transition active:scale-[0.98] hover:border-zinc-700 hover:bg-zinc-800 disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn-primary {
+    @apply border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20;
+  }
+  .btn-ghost {
+    @apply border-transparent bg-transparent hover:bg-zinc-800/60;
+  }
+  .input {
+    @apply w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30;
+  }
+  .label {
+    @apply text-xs uppercase tracking-wider text-zinc-500;
+  }
+  .card {
+    @apply rounded-lg border border-zinc-800 bg-zinc-900/60 p-4;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-zinc-800 bg-zinc-900 px-2 py-0.5 text-xs text-zinc-300;
   }
 }

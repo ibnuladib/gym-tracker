@@ -1,0 +1,13 @@
+{
+  "name": "Gym Tracker",
+  "short_name": "gym.tracker",
+  "description": "A small, fast workout logger.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "icons": [
+    { "src": "/icon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any maskable" }
+  ]
+}
