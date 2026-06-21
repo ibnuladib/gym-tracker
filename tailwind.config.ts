@@ -1,44 +1,38 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
-  darkMode: "class",
+  content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
-      fontFamily: {
-        mono: [
-          "ui-monospace",
-          "SFMono-Regular",
-          "Menlo",
-          "Monaco",
-          "Consolas",
-          "Liberation Mono",
-          "Courier New",
-          "monospace",
-        ],
-      },
       colors: {
-        // GitHub-style heatmap intensity scale
-        heat: {
-          0: "#161b22",
-          1: "#0e4429",
-          2: "#006d32",
-          3: "#26a641",
-          4: "#39d353",
-        },
+        bg: "var(--bg)",
+        elev: "var(--bg-elev)",
+        elev2: "var(--bg-elev-2)",
+        border: "var(--border)",
+        fg: "var(--fg)",
+        muted: "var(--fg-muted)",
+        dim: "var(--fg-dim)",
+        faint: "var(--fg-faint)",
+        accent: "var(--accent)",
+        "accent-fg": "var(--accent-fg)",
+        "accent-bg": "var(--accent-bg)",
+        "accent-border": "var(--accent-border)",
+        danger: "var(--danger)",
+        warn: "var(--warn)",
+        info: "var(--info)",
       },
-      keyframes: {
-        "fade-in": {
-          "0%": { opacity: "0", transform: "translateY(4px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
-        },
+      borderRadius: {
+        xl: "0.75rem",
       },
-      animation: {
-        "fade-in": "fade-in 120ms ease-out",
+      fontSize: {
+        "2xs": ["0.6875rem", { lineHeight: "1rem" }],
+      },
+      boxShadow: {
+        soft: "0 1px 2px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.02) inset",
+        glow: "0 0 0 1px rgba(16,185,129,0.35), 0 8px 24px -12px rgba(16,185,129,0.45)",
+      },
+      transitionTimingFunction: {
+        smooth: "cubic-bezier(0.22, 0.61, 0.36, 1)",
       },
     },
   },

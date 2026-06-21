@@ -2,7 +2,12 @@
 
 import { getApp, getApps, initializeApp, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
-import { getFirestore, type Firestore } from "firebase/firestore";
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  type Firestore,
+} from "firebase/firestore";
 
 const cfg = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -40,6 +45,20 @@ export function getDb(): Firestore | null {
   if (_db) return _db;
   const app = getAppSafe();
   if (!app) return null;
-  _db = getFirestore(app);
+  // Use persistent cache so data is available offline across reloads/tabs.
+  // This must be passed at initialization (cannot be added later).
+  try {
+    _db = initializeFirestore(app, {
+      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+    });
+  } catch {
+    // Fall back to in-memory cache if persistence cannot be initialized
+    // (e.g. SSR, unsupported browser, already initialized).
+    _db = null;
+    // Lazy import to avoid bundling the regular path in case of issues
+    import("firebase/firestore").then(({ getFirestore }) => {
+      _db = getFirestore(app);
+    });
+  }
   return _db;
 }

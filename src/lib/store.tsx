@@ -15,7 +15,6 @@ import {
   collection,
   deleteDoc,
   doc,
-  enableIndexedDbPersistence,
   onSnapshot,
   orderBy,
   query,
@@ -120,13 +119,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setAuthReady(true);
       return;
     }
-    // Enable offline persistence for Firestore (best-effort)
-    const db = getDb();
-    if (db && typeof window !== "undefined") {
-      enableIndexedDbPersistence(db).catch(() => {
-        /* may already be enabled or unsupported */
-      });
-    }
+    // Offline persistence is enabled at Firestore initialization in `lib/firebase.ts`.
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
       setAuthReady(true);

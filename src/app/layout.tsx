@@ -25,10 +25,12 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen font-mono">
+      <body className="min-h-screen font-mono antialiased">
         <StoreProvider>
-          <TopBar />
-          <main className="mx-auto max-w-2xl px-3 pb-24 pt-3 sm:px-4">{children}</main>
+          <div className="relative mx-auto flex min-h-screen max-w-2xl flex-col px-3 pb-28 pt-2 sm:px-4 sm:pt-4">
+            <TopBar />
+            <main className="flex-1 animate-[fadeIn_200ms_ease-out]">{children}</main>
+          </div>
           <Nav />
           <ServiceWorkerRegister />
         </StoreProvider>
