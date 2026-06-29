@@ -4,7 +4,7 @@ import { useState } from "react";
 import { SetRow } from "./SetRow";
 import { nanoid } from "nanoid";
 import type { ExerciseLog, SetEntry, Template, Unit, Workout } from "@/lib/types";
-import { ALL_UNITS, formatWeight, unitLabel } from "@/lib/units";
+import { ALL_UNITS, formatWeight, unitLabel, toKg } from "@/lib/units";
 
 interface Props {
   templates: Template[];
@@ -76,8 +76,7 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
       acc +
       l.sets.reduce((a, s) => {
         if (s.unit === "bw") return a + s.reps;
-        const kg = s.unit === "kg" ? s.weight : s.unit === "lb" ? s.weight * 0.4536 : s.weight * 20;
-        return a + kg * s.reps;
+        return a + toKg(s) * s.reps;
       }, 0),
     0
   );
@@ -157,8 +156,7 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
             <span>
               vol {Math.round(log.sets.reduce((a, s) => {
                 if (s.unit === "bw") return a + s.reps;
-                const kg = s.unit === "kg" ? s.weight : s.unit === "lb" ? s.weight * 0.4536 : s.weight * 20;
-                return a + kg * s.reps;
+                return a + toKg(s) * s.reps;
               }, 0))}kg
             </span>
           </div>

@@ -25,6 +25,14 @@ export function buildHeatmap(workouts: Array<{ date: string }>, weeks = 53): Hea
   const start = new Date(end);
   start.setDate(start.getDate() - (weeks * 7 - 1));
 
+  // Helper to format date as YYYY-MM-DD
+  const isoDate = (d: Date): string => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  };
+
   const cells: HeatmapCell[] = [];
   const maxVolume = [...vol.values()].reduce((m, v) => Math.max(m, v), 0);
   let activeDays = 0;
@@ -52,13 +60,6 @@ export function buildHeatmap(workouts: Array<{ date: string }>, weeks = 53): Hea
   }
 
   return { cells, monthLabels, maxVolume, totalDays: cells.length, activeDays };
-}
-
-export function isoDate(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
 }
 
 function intensity(v: number, max: number): 0 | 1 | 2 | 3 | 4 {
