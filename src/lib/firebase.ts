@@ -18,6 +18,14 @@ const cfg = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+console.log('Firebase config loaded:', {
+  apiKey: !!cfg.apiKey,
+  authDomain: !!cfg.authDomain,
+  projectId: !!cfg.projectId,
+  storageBucket: !!cfg.storageBucket,
+  messagingSenderId: !!cfg.messagingSenderId,
+  appId: !!cfg.appId,
+});
 export const firebaseConfigured = Boolean(cfg.apiKey && cfg.projectId);
 
 let _app: FirebaseApp | null = null;

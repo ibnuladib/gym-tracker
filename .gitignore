@@ -46,3 +46,4 @@ Thumbs.db
 
 # PWA sw caches (none yet, but be safe)
 public/sw.js.map
+.env*

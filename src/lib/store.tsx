@@ -206,7 +206,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInGoogle = useCallback(async () => {
+    console.log('signInGoogle called');
+    console.log('firebaseConfigured:', firebaseConfigured);
     const auth = getFirebaseAuth();
+    console.log('auth:', auth);
     if (!auth) throw new Error("Firebase not configured");
     await signInWithPopup(auth, new GoogleAuthProvider());
   }, []);
