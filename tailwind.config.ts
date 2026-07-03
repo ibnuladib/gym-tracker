@@ -18,18 +18,25 @@ const config: Config = {
         "accent-bg": "var(--accent-bg)",
         "accent-border": "var(--accent-border)",
         danger: "var(--danger)",
+        "danger-fg": "var(--danger-fg)",
         warn: "var(--warn)",
         info: "var(--info)",
       },
       borderRadius: {
-        xl: "0.75rem",
+        md: "0.25rem",
+        sm: "0.125rem",
+        DEFAULT: "0.25rem",
+      },
+      fontFamily: {
+        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
+        display: ["var(--font-display)", "ui-serif", "serif"],
       },
       fontSize: {
         "2xs": ["0.6875rem", { lineHeight: "1rem" }],
       },
       boxShadow: {
         soft: "0 1px 2px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.02) inset",
-        glow: "0 0 0 1px rgba(16,185,129,0.35), 0 8px 24px -12px rgba(16,185,129,0.45)",
+        glow: "0 0 0 1px rgba(232,163,61,0.30), 0 6px 20px -10px rgba(232,163,61,0.40)",
       },
       transitionTimingFunction: {
         smooth: "cubic-bezier(0.22, 0.61, 0.36, 1)",

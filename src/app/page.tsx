@@ -10,12 +10,10 @@ function fmtDate(d: Date) {
   return d.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
 }
 function dayKey(d: Date) {
-  return d.toISOString().slice(0, 10);
-}
-function startOfDay(d: Date) {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 export default function Home() {
@@ -24,7 +22,6 @@ export default function Home() {
   const todays = workouts.filter((w) => w.date === today);
   const last = workouts[0];
 
-  // 14-day sparkline + streak + this-week volume
   const metrics = useMemo(() => {
     const map = dailyVolume(workouts);
     const series: { day: string; vol: number }[] = [];
@@ -36,7 +33,6 @@ export default function Home() {
     }
     const weekVol = series.slice(-7).reduce((a, s) => a + s.vol, 0);
     const maxVol = Math.max(1, ...series.map((s) => s.vol));
-    // streak: consecutive days with a workout, ending today
     let streak = 0;
     for (let i = series.length - 1; i >= 0; i--) {
       if (series[i].vol > 0) streak++;
@@ -45,7 +41,6 @@ export default function Home() {
     return { series, maxVol, weekVol, streak };
   }, [workouts]);
 
-  // derived from unit-aware totals
   const lastVolumeKg = useMemo(() => {
     if (!last) return 0;
     return last.exercises.reduce(
@@ -55,89 +50,81 @@ export default function Home() {
   }, [last]);
 
   return (
-    <div className="space-y-4">
-      <section className="card relative overflow-hidden">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-accent/10 blur-3xl"
-        />
-        <div className="relative">
-          <div className="label">today</div>
-          <div className="mt-1 flex items-end justify-between gap-3">
-            <div>
-              <div className="text-xl font-semibold leading-tight text-fg">
-                {fmtDate(new Date())}
-              </div>
-              <div className="mt-0.5 text-xs text-muted">
-                {todays.length > 0
-                  ? `${todays.length} session${todays.length > 1 ? "s" : ""} today`
-                  : "rest day — or start one below"}
-              </div>
-            </div>
-            <Link
-              href="/workout/new"
-              className="btn btn-primary btn-lg"
-              aria-label="Log a workout"
-            >
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-              <span>log</span>
-            </Link>
-          </div>
+    <div className="space-y-6">
+      {/* Signature — big slab-serif reading inside a hairline frame */}
+      <section className="relative border border-border bg-bg px-5 py-6 sm:px-7 sm:py-8">
+        <div className="mb-4 flex items-center justify-between">
+          <span className="stamp">vol. 7d · kg × reps</span>
+          <span className="stamp">{fmtDate(new Date())}</span>
+        </div>
+        <div className="readout">
+          {Math.round(metrics.weekVol).toLocaleString()}
+          <span className="ml-1 text-fg-faint text-2xl font-normal align-top sm:text-3xl">kg</span>
+        </div>
+        <div className="mt-5 grid grid-cols-3 gap-x-4">
+          <Cell label="sessions" value={String(workouts.length)} />
+          <Cell label="streak" value={metrics.streak > 0 ? `${metrics.streak} d` : "—"} accent={metrics.streak > 0} />
+          <Cell label="today" value={todays.length > 0 ? `${todays.length}` : "rest"} accent={todays.length > 0} />
+        </div>
+        <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
+          <span className="hint">no sessions on the clock? tap below to log one.</span>
+          <Link
+            href="/workout/new"
+            className="btn btn-primary btn-sm"
+            aria-label="Log a workout"
+          >
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            <span>log</span>
+          </Link>
         </div>
       </section>
 
-      <section className="grid grid-cols-3 gap-2">
-        <Stat label="7d vol" value={`${Math.round(metrics.weekVol).toLocaleString()}kg`} />
-        <Stat label="sessions" value={String(workouts.length)} />
-        <Stat label="streak" value={metrics.streak > 0 ? `${metrics.streak}d` : "—"} accent={metrics.streak > 0} />
-      </section>
-
-      <section className="card">
-        <div className="mb-2 flex items-center justify-between">
-          <div className="label">last 14 days</div>
-          <Link href="/heatmap" className="text-2xs text-muted hover:text-fg">
+      {/* 14-day sparkline — hairline section, not a card */}
+      <section>
+        <div className="mb-3 flex items-end justify-between">
+          <h2 className="stamp">last 14 days</h2>
+          <Link href="/heatmap" className="text-2xs text-fg-dim transition-colors hover:text-accent-fg">
             full heatmap →
           </Link>
         </div>
-        <Sparkline series={metrics.series} max={metrics.maxVol} />
+        <div className="border border-border bg-bg p-3">
+          <Sparkline series={metrics.series} max={metrics.maxVol} />
+        </div>
       </section>
 
-      <section className="space-y-2">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-fg">recent</h2>
-          <Link href="/history" className="text-2xs text-muted hover:text-fg">
+      {/* Recent sessions */}
+      <section>
+        <div className="mb-3 flex items-end justify-between">
+          <h2 className="stamp">recent</h2>
+          <Link href="/history" className="text-2xs text-fg-dim transition-colors hover:text-accent-fg">
             all →
           </Link>
         </div>
         {!ready && <div className="skeleton h-14 w-full" />}
         {ready && workouts.length === 0 && (
-          <div className="card flex flex-col items-center gap-1 py-8 text-center text-sm text-muted">
-            <div>no workouts yet</div>
-            <div className="text-2xs text-fg-faint">tap the + button to log your first session</div>
+          <div className="border border-dashed border-border p-6 text-center">
+            <div className="text-sm text-fg-muted">no workouts yet</div>
+            <div className="mt-1 text-2xs text-fg-faint">log your first session to begin</div>
           </div>
         )}
-        <ul className="space-y-1.5">
+        <ul className="border border-border divide-y divide-border">
           {workouts.slice(0, 5).map((w) => {
             const sets = w.exercises.reduce((a, e) => a + e.sets.length, 0);
             return (
               <li key={w.id}>
                 <Link
                   href={`/workout/${w.id}`}
-                  className="card flex items-center justify-between gap-3 transition-colors hover:border-border-strong"
+                  className="group flex items-center justify-between gap-3 px-3 py-2.5 transition-colors hover:bg-elev"
                 >
                   <div className="min-w-0">
                     <div className="truncate text-sm font-medium text-fg">{w.name}</div>
-                    <div className="mt-0.5 flex flex-wrap items-center gap-1 text-2xs text-fg-faint">
-                      <span>{w.date}</span>
-                      <span>·</span>
-                      <span>{w.exercises.length} ex</span>
-                      <span>·</span>
-                      <span>{sets} sets</span>
+                    <div className="num mt-0.5 text-2xs text-fg-faint">
+                      {w.date} · {w.exercises.length} ex · {sets} sets
                     </div>
                   </div>
-                  <span className="chip text-2xs">view</span>
+                  <span className="text-2xs text-fg-dim transition-colors group-hover:text-accent-fg">view →</span>
                 </Link>
               </li>
             );
@@ -149,11 +136,11 @@ export default function Home() {
         <section>
           <Link
             href={`/workout/new?repeat=${last.id}`}
-            className="card flex items-center justify-between gap-3 transition-colors hover:border-accent-border"
+            className="group flex items-center justify-between gap-3 border border-accent-border bg-accent-bg px-3 py-2.5 transition-colors hover:border-accent"
           >
             <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-accent-border bg-accent-bg text-accent">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center border border-accent-border text-accent">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d="M3 12a9 9 0 0 1 15.5-6.3L21 8" />
                   <path d="M21 3v5h-5" />
                   <path d="M21 12a9 9 0 0 1-15.5 6.3L3 16" />
@@ -162,7 +149,7 @@ export default function Home() {
               </div>
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium text-fg">{last.name}</div>
-                <div className="text-2xs text-fg-faint">
+                <div className="num text-2xs text-fg-faint">
                   {last.date} · {Math.round(lastVolumeKg).toLocaleString()}kg
                 </div>
               </div>
@@ -176,7 +163,7 @@ export default function Home() {
         <section>
           <Link
             href="/templates"
-            className="card-sm flex items-center justify-between text-xs text-muted hover:text-fg"
+            className="flex items-center justify-between border border-border px-3 py-2 text-xs text-fg-muted transition-colors hover:bg-elev hover:text-fg"
           >
             <span>{templates.length} template{templates.length !== 1 ? "s" : ""} saved</span>
             <span>manage →</span>
@@ -187,13 +174,11 @@ export default function Home() {
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+function Cell({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className="card-sm">
-      <div className="label">{label}</div>
-      <div className={"mt-1 text-base font-semibold num " + (accent ? "text-accent" : "text-fg")}>
-        {value}
-      </div>
+    <div>
+      <div className="stamp">{label}</div>
+      <div className={"readout-sm mt-1 " + (accent ? "text-accent" : "")}>{value}</div>
     </div>
   );
 }
@@ -212,11 +197,11 @@ function Sparkline({ series, max }: { series: { day: string; vol: number }[]; ma
   const area = `${path} L${points[points.length - 1].x},${h} L${points[0].x},${h} Z`;
   const today = points[points.length - 1];
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="h-14 w-full" preserveAspectRatio="none">
+    <svg viewBox={`0 0 ${w} ${h}`} className="h-14 w-full text-accent" preserveAspectRatio="none">
       <path d={area} fill="url(#spark-grad)" />
       <defs>
         <linearGradient id="spark-grad" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor="currentColor" stopOpacity="0.35" />
+          <stop offset="0%" stopColor="currentColor" stopOpacity="0.28" />
           <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
         </linearGradient>
       </defs>
@@ -224,12 +209,12 @@ function Sparkline({ series, max }: { series: { day: string; vol: number }[]; ma
         d={path}
         fill="none"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="1.2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        opacity="0.9"
+        opacity="0.95"
       />
-      <circle cx={today.x} cy={today.y} r="2.5" fill="currentColor" />
+      <circle cx={today.x} cy={today.y} r="2" fill="currentColor" />
     </svg>
   );
 }

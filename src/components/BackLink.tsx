@@ -7,7 +7,7 @@ function Arrow() {
   return (
     <svg
       viewBox="0 0 24 24"
-      className="h-3.5 w-3.5"
+      className="h-3 w-3"
       fill="none"
       stroke="currentColor"
       strokeWidth="2.2"
@@ -25,17 +25,18 @@ export function BackLink({ href, label }: { href?: string; label?: string }) {
   return (
     <button
       onClick={() => (href ? router.push(href) : router.back())}
-      className="inline-flex h-7 items-center gap-1 rounded-md px-1 text-xs text-muted transition-colors hover:bg-elev hover:text-fg"
+      className="inline-flex h-6 items-center gap-1 px-1 text-2xs text-fg-dim transition-colors hover:text-fg"
+      style={{ letterSpacing: "0.18em" }}
     >
       <Arrow />
-      <span>{label ?? "back"}</span>
+      <span className="uppercase">{label ?? "back"}</span>
     </button>
   );
 }
 
 export function HeaderLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="text-xs text-muted transition-colors hover:text-fg">
+    <Link href={href} className="text-xs text-fg-dim transition-colors hover:text-fg">
       {children}
     </Link>
   );

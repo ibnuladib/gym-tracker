@@ -42,7 +42,7 @@ export function Chart({ series, height = 180, yLabel, formatY }: Props) {
       [...s.points].sort((a, b) => a.x - b.x).map((p) => ({
         cx: x(p.x),
         cy: y(p.y),
-        color: s.color ?? "#10b981",
+        color: s.color ?? "#e8a33d",
         meta: p.meta ?? "",
       }))
     );
@@ -64,25 +64,25 @@ export function Chart({ series, height = 180, yLabel, formatY }: Props) {
       >
         {ticks.map((t, i) => (
           <g key={i}>
-            <line x1={padL} x2={width - padR} y1={t.y} y2={t.y} stroke="#27272a" strokeDasharray="2 4" />
-            <text x={4} y={t.y + 3} fontSize="10" fill="#71717a" fontFamily="ui-monospace, monospace">
+            <line x1={padL} x2={width - padR} y1={t.y} y2={t.y} stroke="#2a2620" strokeDasharray="2 4" />
+            <text x={4} y={t.y + 3} fontSize="10" fill="#6b6457" fontFamily="ui-monospace, monospace">
               {formatY ? formatY(t.v) : Math.round(t.v)}
             </text>
           </g>
         ))}
         {paths.map((d, i) => (
-          <path key={i} d={d} fill="none" stroke={series[i].color ?? "#10b981"} strokeWidth="1.6" />
+          <path key={i} d={d} fill="none" stroke={series[i].color ?? "#e8a33d"} strokeWidth="1.4" />
         ))}
         {dots.map((d, i) => (
-          <circle key={i} cx={d.cx} cy={d.cy} r={2.4} fill={d.color}>
+          <circle key={i} cx={d.cx} cy={d.cy} r={2.2} fill={d.color}>
             <title>{d.meta}</title>
           </circle>
         ))}
         {series.length > 1 && (
-          <g fontSize="10" fontFamily="ui-monospace, monospace" fill="#a1a1aa">
+          <g fontSize="10" fontFamily="ui-monospace, monospace" fill="#9b9384">
             {series.map((s, i) => (
               <g key={i} transform={`translate(${padL + i * 80}, ${height - 4})`}>
-                <rect width="10" height="10" fill={s.color ?? "#10b981"} />
+                <rect width="10" height="10" fill={s.color ?? "#e8a33d"} />
                 <text x="14" y="9">{s.label}</text>
               </g>
             ))}

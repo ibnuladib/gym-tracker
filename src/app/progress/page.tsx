@@ -24,43 +24,49 @@ export default function ProgressPage() {
   }, [workouts]);
 
   return (
-    <div className="space-y-3">
-      <h1 className="text-lg font-semibold">progress</h1>
-      <div className="flex gap-2">
-        <button onClick={() => setTab("overview")} className={`chip ${tab === "overview" ? "border-emerald-500/40 text-emerald-300" : ""}`}>overview</button>
-        <button onClick={() => setTab("exercises")} className={`chip ${tab === "exercises" ? "border-emerald-500/40 text-emerald-300" : ""}`}>exercises</button>
-      </div>
+    <div className="space-y-5">
+      <header className="flex items-end justify-between">
+        <h1 className="font-display text-2xl font-light tracking-tight text-fg">progress</h1>
+        <div className="segmented">
+          <button onClick={() => setTab("overview")} data-active={tab === "overview"}>overview</button>
+          <button onClick={() => setTab("exercises")} data-active={tab === "exercises"}>exercises</button>
+        </div>
+      </header>
 
       {tab === "overview" ? (
-        <div className="card space-y-2">
-          <div className="label">daily volume (kg × reps)</div>
+        <section className="card space-y-3">
+          <div className="stamp">daily volume · kg × reps</div>
           {points.length === 0 ? (
-            <div className="py-6 text-center text-sm text-zinc-500">log a session to see your chart.</div>
+            <div className="py-6 text-center text-sm text-fg-dim">log a session to see your chart.</div>
           ) : (
-            <Chart series={[{ label: "volume", color: "#10b981", points }]} yLabel="kg" formatY={(n) => `${Math.round(n).toLocaleString()}`} />
+            <Chart series={[{ label: "volume", color: "#e8a33d", points }]} yLabel="kg" formatY={(n) => `${Math.round(n).toLocaleString()}`} />
           )}
-        </div>
+        </section>
       ) : (
-        <div className="card">
+        <section className="card">
           {exercises.length === 0 ? (
-            <div className="py-6 text-center text-sm text-zinc-500">no exercises yet.</div>
+            <div className="py-6 text-center text-sm text-fg-dim">no exercises yet.</div>
           ) : (
-            <ul className="divide-y divide-zinc-900">
+            <ul className="divide-y divide-border">
               {exercises.map((e) => {
                 const count = exerciseCounts.find(([n]) => n === e.name)?.[1] ?? 0;
                 return (
-                  <li key={e.id} className="flex items-center justify-between py-2">
+                  <li key={e.id} className="flex items-center justify-between py-2.5">
                     <div>
-                      <Link href={`/exercises/${encodeURIComponent(e.name)}`} className="text-sm text-zinc-100 hover:text-emerald-300">{e.name}</Link>
-                      <div className="text-xs text-zinc-500">{count} sets logged</div>
+                      <Link href={`/exercises/${encodeURIComponent(e.name)}`} className="text-sm text-fg transition-colors hover:text-accent-fg">
+                        {e.name}
+                      </Link>
+                      <div className="num text-2xs text-fg-faint">{count} sets logged</div>
                     </div>
-                    <Link href={`/exercises/${encodeURIComponent(e.name)}`} className="text-xs text-zinc-500 hover:text-emerald-300">chart →</Link>
+                    <Link href={`/exercises/${encodeURIComponent(e.name)}`} className="text-2xs text-fg-dim transition-colors hover:text-accent-fg">
+                      chart →
+                    </Link>
                   </li>
                 );
               })}
             </ul>
           )}
-        </div>
+        </section>
       )}
     </div>
   );

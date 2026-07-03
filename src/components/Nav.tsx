@@ -19,19 +19,19 @@ export function Nav() {
 
   return (
     <>
-      {/* Floating primary CTA */}
+      {/* Floating primary CTA — square, instrument-feel, no glow halo */}
       <Link
         href="/workout/new"
         aria-label="Log a workout"
-        className="fixed bottom-[68px] left-1/2 z-40 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full border border-accent-border bg-bg text-accent shadow-glow transition-transform hover:scale-105 active:scale-95"
+        className="fixed bottom-[68px] left-1/2 z-40 flex h-12 w-12 -translate-x-1/2 items-center justify-center border border-accent bg-bg text-accent transition-colors hover:bg-accent-bg active:scale-95"
       >
         <svg
           viewBox="0 0 24 24"
-          width="22"
-          height="22"
+          width="18"
+          height="18"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2.4"
+          strokeWidth="2.2"
           strokeLinecap="round"
           strokeLinejoin="round"
         >
@@ -40,7 +40,7 @@ export function Nav() {
       </Link>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-30 safe-bottom border-t border-border bg-bg/85 backdrop-blur supports-[backdrop-filter]:bg-bg/65"
+        className="fixed inset-x-0 bottom-0 z-30 safe-bottom border-t border-border bg-bg/90 backdrop-blur supports-[backdrop-filter]:bg-bg/70"
         aria-label="Primary"
       >
         <ul className="mx-auto flex max-w-2xl items-stretch justify-around px-1">
@@ -51,21 +51,22 @@ export function Nav() {
                 <Link
                   href={href}
                   aria-current={active ? "page" : undefined}
-                  className="group relative flex min-h-[56px] flex-col items-center justify-center gap-0.5 rounded-md text-[10px] font-medium uppercase tracking-[0.1em] text-muted transition-colors hover:text-fg"
+                  className="group relative flex min-h-[56px] flex-col items-center justify-center gap-0.5 text-[10px] font-medium uppercase text-fg-dim transition-colors hover:text-fg"
+                  style={{ letterSpacing: "0.18em" }}
                 >
                   <span
                     className={
-                      "flex h-7 items-center justify-center transition-colors " +
+                      "flex h-6 items-center justify-center transition-colors " +
                       (active ? "text-accent" : "")
                     }
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-4 w-4" />
                   </span>
                   <span className={active ? "text-fg" : ""}>{label}</span>
                   {active && (
                     <span
                       aria-hidden
-                      className="absolute -top-px h-0.5 w-6 rounded-full bg-accent shadow-glow"
+                      className="absolute -top-px h-px w-5 bg-accent"
                     />
                   )}
                 </Link>
@@ -80,7 +81,7 @@ export function Nav() {
 
 function IconToday(p: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...p}>
       <circle cx="12" cy="12" r="4" />
       <path d="M12 3v1.5M12 19.5V21M3 12h1.5M19.5 12H21M5.6 5.6l1.05 1.05M17.35 17.35l1.05 1.05M5.6 18.4l1.05-1.05M17.35 6.65l1.05-1.05" />
     </svg>
@@ -88,7 +89,7 @@ function IconToday(p: IconProps) {
 }
 function IconList(p: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...p}>
       <path d="M8 6h13M8 12h13M8 18h13" />
       <circle cx="4" cy="6" r="0.8" fill="currentColor" />
       <circle cx="4" cy="12" r="0.8" fill="currentColor" />
@@ -98,17 +99,17 @@ function IconList(p: IconProps) {
 }
 function IconGrid(p: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" {...p}>
-      <rect x="3" y="3" width="7" height="7" rx="1.5" />
-      <rect x="14" y="3" width="7" height="7" rx="1.5" />
-      <rect x="3" y="14" width="7" height="7" rx="1.5" />
-      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" {...p}>
+      <rect x="3" y="3" width="7" height="7" rx="0.5" />
+      <rect x="14" y="3" width="7" height="7" rx="0.5" />
+      <rect x="3" y="14" width="7" height="7" rx="0.5" />
+      <rect x="14" y="14" width="7" height="7" rx="0.5" />
     </svg>
   );
 }
 function IconChart(p: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...p}>
       <path d="M3 4v17h17" />
       <path d="M7 15l4-6 4 4 5-7" />
     </svg>

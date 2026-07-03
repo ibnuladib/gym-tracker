@@ -10,11 +10,11 @@ const GAP = 3;
 const LEFT = 28;
 
 const LEVEL_BG: Record<0 | 1 | 2 | 3 | 4, string> = {
-  0: "var(--heat-0, #161b22)",
-  1: "var(--heat-1, #0e4429)",
-  2: "var(--heat-2, #006d32)",
-  3: "var(--heat-3, #26a641)",
-  4: "var(--heat-4, #39d353)",
+  0: "var(--heat-0)",
+  1: "var(--heat-1)",
+  2: "var(--heat-2)",
+  3: "var(--heat-3)",
+  4: "var(--heat-4)",
 };
 
 export function Heatmap({ workouts }: { workouts: Workout[] }) {
@@ -24,7 +24,7 @@ export function Heatmap({ workouts }: { workouts: Workout[] }) {
   const height = 18 + 7 * (CELL + GAP);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <div className="relative overflow-x-auto">
         <svg
           width={width}
@@ -39,9 +39,10 @@ export function Heatmap({ workouts }: { workouts: Workout[] }) {
               key={i}
               x={LEFT + m.x * (CELL + GAP)}
               y={10}
-              className="fill-zinc-500"
+              className="fill-fg-dim"
               fontSize="10"
               fontFamily="ui-monospace, monospace"
+              style={{ letterSpacing: "0.1em" }}
             >
               {m.label}
             </text>
@@ -51,7 +52,7 @@ export function Heatmap({ workouts }: { workouts: Workout[] }) {
               key={d}
               x={0}
               y={20 + (i * 2 + 1) * (CELL + GAP)}
-              className="fill-zinc-500"
+              className="fill-fg-dim"
               fontSize="9"
               fontFamily="ui-monospace, monospace"
             >
@@ -70,7 +71,7 @@ export function Heatmap({ workouts }: { workouts: Workout[] }) {
                 y={y}
                 width={CELL}
                 height={CELL}
-                rx={2}
+                rx={1}
                 fill={LEVEL_BG[c.level]}
                 onMouseEnter={() => setHover({ i, x, y })}
                 onMouseLeave={() => setHover(null)}
@@ -82,21 +83,26 @@ export function Heatmap({ workouts }: { workouts: Workout[] }) {
         </svg>
         {hover && data.cells[hover.i] && (
           <div
-            className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-md border border-zinc-800 bg-zinc-950/95 px-2 py-1 text-xs text-zinc-200 shadow-lg"
-            style={{ left: hover.x + CELL / 2, top: hover.y - 4 }}
+            className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full border border-border bg-bg px-2 py-1 text-2xs text-fg"
+            style={{ left: hover.x + CELL / 2, top: hover.y - 4, fontFamily: "var(--font-mono)" }}
           >
-            <div className="font-semibold">{data.cells[hover.i].date}</div>
-            <div className="text-zinc-400">{data.cells[hover.i].volume > 0 ? `${Math.round(data.cells[hover.i].volume).toLocaleString()}kg vol` : "rest day"}</div>
+            <div className="text-fg">{data.cells[hover.i].date}</div>
+            <div className="text-fg-dim">
+              {data.cells[hover.i].volume > 0
+                ? `${Math.round(data.cells[hover.i].volume).toLocaleString()}kg vol`
+                : "rest day"}
+            </div>
           </div>
         )}
       </div>
-      <div className="flex items-center gap-2 text-xs text-zinc-500">
+      <div className="flex items-center gap-2 text-2xs text-fg-dim" style={{ letterSpacing: "0.1em" }}>
         <span>less</span>
         {([0, 1, 2, 3, 4] as const).map((l) => (
-          <span key={l} className={clsx("h-3 w-3 rounded-sm")} style={{ background: LEVEL_BG[l] }} />
+          <span key={l} className={clsx("h-3 w-3")} style={{ background: LEVEL_BG[l] }} />
         ))}
         <span>more</span>
-        <span className="ml-auto">{data.activeDays} active / {data.totalDays} days</span>
+        <span className="ml-auto text-fg">{data.activeDays}</span>
+        <span className="text-fg-faint">/ {data.totalDays} days active</span>
       </div>
     </div>
   );

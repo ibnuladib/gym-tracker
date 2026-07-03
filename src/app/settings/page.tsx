@@ -11,19 +11,22 @@ export default function SettingsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="space-y-3">
-      <BackLink href="/" />
-      <h1 className="text-lg font-semibold">settings</h1>
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <BackLink href="/" />
+        <h1 className="font-display text-2xl font-light tracking-tight text-fg">settings</h1>
+        <span className="w-10" />
+      </div>
 
-      <section className="card space-y-2">
-        <div className="label">account</div>
+      <section className="card space-y-3">
+        <div className="stamp">account</div>
         {!cloudEnabled ? (
-          <div className="text-sm text-zinc-400">
-            Firebase is not configured. Data stays in this browser. Set <code className="text-emerald-300">NEXT_PUBLIC_FIREBASE_*</code> in <code className="text-emerald-300">.env.local</code> to enable cross-device sync.
+          <div className="text-sm text-fg-muted">
+            Firebase is not configured. Data stays in this browser. Set <code className="text-accent-fg">NEXT_PUBLIC_FIREBASE_*</code> in <code className="text-accent-fg">.env.local</code> to enable cross-device sync.
           </div>
         ) : user ? (
           <div className="flex items-center justify-between text-sm">
-            <span className="text-zinc-300">{user.email ?? `anonymous (${user.uid.slice(0, 6)}…)`}</span>
+            <span className="text-fg">{user.email ?? `anonymous (${user.uid.slice(0, 6)}…)`}</span>
             <button onClick={signOut} className="btn">sign out</button>
           </div>
         ) : (
@@ -34,8 +37,8 @@ export default function SettingsPage() {
         )}
       </section>
 
-      <section className="card space-y-2">
-        <div className="label">data</div>
+      <section className="card space-y-3">
+        <div className="stamp">data</div>
         <div className="flex flex-wrap gap-2">
           <button
             className="btn"
@@ -72,12 +75,14 @@ export default function SettingsPage() {
             }}
           />
         </div>
-        <p className="text-xs text-zinc-500">export saves a full snapshot of workouts, templates, and exercises.</p>
-        {busy && <div className="text-xs text-zinc-500">working…</div>}
+        <p className="text-2xs text-fg-dim" style={{ letterSpacing: "0.06em" }}>
+          export saves a full snapshot of workouts, templates, and exercises.
+        </p>
+        {busy && <div className="text-2xs text-fg-dim">working…</div>}
       </section>
 
-      <section className="card text-xs text-zinc-500">
-        <div className="label">about</div>
+      <section className="card text-2xs text-fg-dim">
+        <div className="stamp mb-2">about</div>
         <p>gym.tracker — a small, fast workout logger. Dark, monospace, mobile-first, offline-capable PWA.</p>
       </section>
     </div>

@@ -22,11 +22,11 @@ export default function TemplatesPage() {
   };
 
   return (
-    <div className="space-y-3">
-      <BackLink href="/" />
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">templates</h1>
-        <button onClick={newTemplate} className="btn btn-primary">+ new</button>
+        <BackLink href="/" />
+        <h1 className="font-display text-2xl font-light tracking-tight text-fg">templates</h1>
+        <button onClick={newTemplate} className="btn btn-primary btn-sm">+ new</button>
       </div>
 
       {editing ? (
@@ -40,17 +40,19 @@ export default function TemplatesPage() {
           }}
         />
       ) : templates.length === 0 ? (
-        <div className="card text-sm text-zinc-500">no templates yet — add one to get started.</div>
+        <div className="card text-sm text-fg-dim">no templates yet — add one to get started.</div>
       ) : (
         <ul className="space-y-1.5">
           {templates.map((t) => (
             <li key={t.id} className="card">
               <div className="flex items-center justify-between">
-                <div className="text-sm font-semibold">{t.name}</div>
-                <div className="flex gap-2 text-xs">
-                  <button className="text-zinc-500 hover:text-emerald-300" onClick={() => setEditing(t)}>edit</button>
+                <div className="text-sm font-medium text-fg">{t.name}</div>
+                <div className="flex gap-3 text-2xs">
+                  <button className="text-fg-dim transition-colors hover:text-accent-fg" onClick={() => setEditing(t)}>
+                    edit
+                  </button>
                   <button
-                    className="text-rose-400 hover:text-rose-300"
+                    className="text-danger transition-colors hover:text-danger-fg"
                     onClick={() => {
                       if (confirm(`Delete template "${t.name}"?`)) deleteTemplate(t.id);
                     }}
@@ -59,9 +61,11 @@ export default function TemplatesPage() {
                   </button>
                 </div>
               </div>
-              <div className="mt-1 flex flex-wrap gap-1.5 text-xs text-zinc-500">
+              <div className="num mt-2 flex flex-wrap gap-1.5 text-2xs text-fg-faint">
                 {t.items.map((it, i) => (
-                  <span key={i} className="chip">{it.exerciseName} {it.defaultSets}×{it.defaultReps}</span>
+                  <span key={i} className="chip">
+                    {it.exerciseName} {it.defaultSets}×{it.defaultReps}
+                  </span>
                 ))}
               </div>
             </li>
@@ -140,11 +144,11 @@ function TemplateEditor({
                 <option key={u} value={u}>{unitShort(u)}</option>
               ))}
             </select>
-            <button onClick={() => remove(i)} className="flex h-8 w-8 items-center justify-center text-zinc-500 hover:text-rose-400">×</button>
+            <button onClick={() => remove(i)} className="flex h-8 w-8 items-center justify-center text-fg-dim transition-colors hover:text-danger">×</button>
           </div>
         ))}
       </div>
-      <div className="flex gap-2 text-xs text-zinc-500">
+      <div className="flex gap-2 text-2xs text-fg-faint" style={{ letterSpacing: "0.08em" }}>
         <span className="flex-1">ex · sets · reps · wt · unit</span>
       </div>
       <div className="flex justify-between">

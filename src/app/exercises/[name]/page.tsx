@@ -20,10 +20,13 @@ export default function ExercisePage() {
 
   if (!prs || prs.bestE1RM.value === 0) {
     return (
-      <div className="space-y-3">
-        <BackLink href="/progress" />
-        <h1 className="text-lg font-semibold">{name}</h1>
-        <div className="card text-sm text-zinc-500">no data for this exercise yet.</div>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <BackLink href="/progress" />
+          <h1 className="font-display text-2xl font-light tracking-tight text-fg">{name}</h1>
+          <span className="w-10" />
+        </div>
+        <div className="card text-sm text-fg-dim">no data for this exercise yet.</div>
       </div>
     );
   }
@@ -33,9 +36,12 @@ export default function ExercisePage() {
   const wtPts = series.byDate.map((p, i) => ({ x: i, y: p.topWeight, meta: `${p.date}: ${p.topWeight.toFixed(1)}kg top` }));
 
   return (
-    <div className="space-y-3">
-      <BackLink href="/progress" />
-      <h1 className="text-lg font-semibold">{name}</h1>
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <BackLink href="/progress" />
+        <h1 className="font-display text-2xl font-light tracking-tight text-fg">{name}</h1>
+        <span className="w-10" />
+      </div>
 
       <div className="grid grid-cols-2 gap-2">
         <Pr label="est. 1RM" value={`${prs.bestE1RM.value.toFixed(1)}kg`} sub={prs.bestE1RM.date} />
@@ -44,23 +50,25 @@ export default function ExercisePage() {
         <Pr label="best volume" value={`${Math.round(prs.bestVolume.value).toLocaleString()}kg`} sub={prs.bestVolume.date} />
       </div>
 
-      <div className="card space-y-2">
-        <div className="label">volume over time</div>
-        {volPts.length > 1 ? <Chart series={[{ label: "volume", color: "#10b981", points: volPts }]} yLabel="kg" formatY={(n) => `${Math.round(n).toLocaleString()}`} /> : <Empty />}
+      <div className="card space-y-3">
+        <div className="stamp">volume over time</div>
+        {volPts.length > 1 ? <Chart series={[{ label: "volume", color: "#e8a33d", points: volPts }]} yLabel="kg" formatY={(n) => `${Math.round(n).toLocaleString()}`} /> : <Empty />}
       </div>
 
-      <div className="card space-y-2">
-        <div className="label">estimated 1RM</div>
-        {e1Pts.length > 1 ? <Chart series={[{ label: "e1RM", color: "#22d3ee", points: e1Pts }]} yLabel="kg" formatY={(n) => n.toFixed(0)} /> : <Empty />}
+      <div className="card space-y-3">
+        <div className="stamp">estimated 1RM</div>
+        {e1Pts.length > 1 ? <Chart series={[{ label: "e1RM", color: "#f0d267", points: e1Pts }]} yLabel="kg" formatY={(n) => n.toFixed(0)} /> : <Empty />}
       </div>
 
-      <div className="card space-y-2">
-        <div className="label">top weight</div>
-        {wtPts.length > 1 ? <Chart series={[{ label: "top", color: "#f59e0b", points: wtPts }]} yLabel="kg" formatY={(n) => n.toFixed(0)} /> : <Empty />}
+      <div className="card space-y-3">
+        <div className="stamp">top weight</div>
+        {wtPts.length > 1 ? <Chart series={[{ label: "top", color: "#d14b2f", points: wtPts }]} yLabel="kg" formatY={(n) => n.toFixed(0)} /> : <Empty />}
       </div>
 
-      <div className="text-xs text-zinc-500">
-        PR list <Link href="/progress" className="text-zinc-300 hover:text-emerald-300">back to progress</Link>
+      <div className="text-2xs text-fg-faint" style={{ letterSpacing: "0.08em" }}>
+        <Link href="/progress" className="text-fg-dim transition-colors hover:text-accent-fg">
+          ← back to progress
+        </Link>
       </div>
     </div>
   );
@@ -69,13 +77,13 @@ export default function ExercisePage() {
 function Pr({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="card p-3">
-      <div className="label">{label}</div>
-      <div className="mt-1 text-lg font-semibold text-emerald-300">{value}</div>
-      {sub && <div className="text-[10px] text-zinc-500">{sub}</div>}
+      <div className="stamp">{label}</div>
+      <div className="readout-sm mt-1 text-accent">{value}</div>
+      {sub && <div className="num mt-1 text-2xs text-fg-faint">{sub}</div>}
     </div>
   );
 }
 
 function Empty() {
-  return <div className="py-6 text-center text-sm text-zinc-500">log more sessions to see a trend.</div>;
+  return <div className="py-6 text-center text-sm text-fg-dim">log more sessions to see a trend.</div>;
 }

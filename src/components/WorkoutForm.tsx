@@ -128,7 +128,7 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
           <div className="flex flex-wrap items-center gap-2">
             <span className="label">template:</span>
             {templates.map((t) => (
-              <button key={t.id} className="chip hover:border-emerald-500/40 hover:text-emerald-300" onClick={() => applyTemplate(t.id)}>
+              <button key={t.id} className="chip transition-colors hover:border-accent-border hover:text-accent-fg" onClick={() => applyTemplate(t.id)}>
                 {t.name}
               </button>
             ))}
@@ -139,8 +139,8 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
       {logs.map((log, i) => (
         <div key={i} className="card space-y-2 animate-fade-in">
           <div className="flex items-center justify-between">
-            <div className="text-sm font-semibold text-zinc-100">{log.name}</div>
-            <button onClick={() => removeExercise(i)} className="text-xs text-zinc-500 hover:text-rose-400">
+            <div className="font-display text-lg font-light tracking-tight text-fg">{log.name}</div>
+            <button onClick={() => removeExercise(i)} className="text-2xs text-fg-dim transition-colors hover:text-danger">
               remove
             </button>
           </div>
@@ -149,8 +149,8 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
               <SetRow key={sIdx} set={s} index={sIdx} onChange={(next) => updateSet(i, sIdx, next)} onRemove={() => removeSet(i, sIdx)} />
             ))}
           </div>
-          <div className="flex items-center justify-between text-xs text-zinc-500">
-            <button onClick={() => addSet(i)} className="btn btn-ghost h-8 px-2 py-1 text-xs">
+          <div className="num flex items-center justify-between text-2xs text-fg-dim">
+            <button onClick={() => addSet(i)} className="btn btn-ghost h-7 px-2 text-2xs">
               + add set
             </button>
             <span>
@@ -163,14 +163,14 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
         </div>
       ))}
 
-      <div className="card space-y-2">
+      <div className="card space-y-3">
         <div className="label">add exercise</div>
         <div className="flex flex-wrap gap-1.5">
           {exercises
             .filter((e) => !logs.some((l) => l.name.toLowerCase() === e.name.toLowerCase()))
             .slice(0, 24)
             .map((e) => (
-              <button key={e.name} className="chip hover:border-emerald-500/40 hover:text-emerald-300" onClick={() => addExercise(e.name)}>
+              <button key={e.name} className="chip transition-colors hover:border-accent-border hover:text-accent-fg" onClick={() => addExercise(e.name)}>
                 + {e.name}
               </button>
             ))}
@@ -199,16 +199,19 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
       <div className="card space-y-2">
         <div className="label">notes</div>
         <textarea
-          className="input min-h-[60px]"
+          className="input min-h-[60px] py-2"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="optional"
         />
       </div>
 
-      <div className="sticky bottom-16 z-20 -mx-3 border-t border-zinc-900 bg-zinc-950/95 px-3 py-3 backdrop-blur sm:-mx-4 sm:px-4">
+      <div className="sticky bottom-16 z-20 -mx-4 border-t border-border bg-bg/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-2">
-          <div className="text-xs text-zinc-500">total vol {Math.round(totalVolume).toLocaleString()}kg</div>
+          <div className="num text-2xs text-fg-dim">
+            <span className="stamp mr-2">total vol</span>
+            {Math.round(totalVolume).toLocaleString()}kg
+          </div>
           <div className="flex gap-2">
             {onCancel && (
               <button className="btn" onClick={onCancel}>

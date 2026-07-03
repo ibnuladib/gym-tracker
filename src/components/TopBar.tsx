@@ -7,8 +7,8 @@ import { useStore } from "@/lib/store";
 function CloudIcon({ ok }: { ok: boolean }) {
   return (
     <svg
-      width="14"
-      height="14"
+      width="12"
+      height="12"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -32,18 +32,20 @@ export function TopBar() {
   const showSignedIn = ready && cloudEnabled && user;
 
   return (
-    <header className="sticky top-0 z-30 -mx-3 mb-3 border-b border-border bg-bg/80 px-3 backdrop-blur supports-[backdrop-filter]:bg-bg/60 safe-top sm:-mx-4 sm:px-4">
+    <header className="sticky top-0 z-30 -mx-4 mb-6 border-b border-border bg-bg/90 px-4 backdrop-blur supports-[backdrop-filter]:bg-bg/70 safe-top sm:-mx-6 sm:px-6">
       <div className="flex h-12 items-center justify-between">
         <Link
           href="/"
-          className="flex items-center gap-2 text-sm font-semibold tracking-tight text-fg"
+          className="flex items-baseline gap-2 text-fg"
           aria-label="Go to home"
         >
-          <span className="inline-block h-2.5 w-2.5 rounded-sm bg-accent shadow-glow" />
-          <span>gym<span className="text-fg-faint">.tracker</span></span>
+          <span className="inline-block h-2 w-2 translate-y-[2px] bg-accent" />
+          <span className="font-display text-sm font-medium tracking-tight">
+            gym<span className="text-fg-faint">.tracker</span>
+          </span>
         </Link>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           {showStatus && (
             <Link
               href="/settings"
