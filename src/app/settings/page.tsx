@@ -31,7 +31,7 @@ export default function SettingsPage() {
           </div>
         ) : (
           <div className="flex gap-2">
-            <button className="btn" onClick={signInGoogle}>continue with google</button>
+            <button className="btn" onClick={() => { console.log("[ui] continue with google clicked"); signInGoogle(); }}>continue with google</button>
             <button className="btn btn-ghost" onClick={signInAnon}>use anonymous</button>
           </div>
         )}

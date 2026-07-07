@@ -28,9 +28,10 @@ import {
 } from "firebase/firestore";
 import {
   GoogleAuthProvider,
+  getRedirectResult,
   onAuthStateChanged,
   signInAnonymously,
-  signInWithPopup,
+  signInWithRedirect,
   signOut,
   type User,
 } from "firebase/auth";
@@ -121,9 +122,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
     // Offline persistence is enabled at Firestore initialization in `lib/firebase.ts`.
     const unsub = onAuthStateChanged(auth, (u) => {
+      console.log("[auth] onAuthStateChanged ->", u ? `user ${u.uid} (${u.isAnonymous ? "anon" : "google"})` : "null");
       setUser(u);
       setAuthReady(true);
     });
+    // Pick up the credential after a signInWithRedirect round-trip.
+    getRedirectResult(auth)
+      .then((res) => {
+        console.log("[auth] getRedirectResult ->", res ? `user ${res.user.uid}` : "null (no pending redirect)");
+      })
+      .catch((e) => console.error("[auth] getRedirectResult error:", e?.code, e?.message, e));
     return () => unsub();
   }, []);
 
@@ -206,12 +214,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInGoogle = useCallback(async () => {
-    console.log('signInGoogle called');
-    console.log('firebaseConfigured:', firebaseConfigured);
+    console.log("[auth] signInGoogle called, configured=", firebaseConfigured);
     const auth = getFirebaseAuth();
-    console.log('auth:', auth);
+    console.log("[auth] auth instance:", auth);
     if (!auth) throw new Error("Firebase not configured");
-    await signInWithPopup(auth, new GoogleAuthProvider());
+    try {
+      console.log("[auth] calling signInWithPopup...");
+      await signInWithPopup(auth, new GoogleAuthProvider());
+      console.log("[auth] signInWithPopup resolved");
+    } catch (e) {
+      console.error("[auth] signInWithPopup threw:", e);
+      // If popup is blocked or fails, fall back to redirect
+      console.log("[auth] falling back to signInWithRedirect");
+      await signInWithRedirect(auth, new GoogleAuthProvider());
+      console.log("[auth] signInWithRedirect resolved (page should be navigating away)");
+    }
   }, []);
 
   const signInAnon = useCallback(async () => {
