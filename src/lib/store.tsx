@@ -78,7 +78,7 @@ interface StoreState {
   workouts: Workout[];
   templates: Template[];
   exercises: Exercise[];
-  signInGoogle: () => Promise<void>;
+  signInGoogle: () => Promise<unknown>;
   signInAnon: () => Promise<void>;
   signOut: () => Promise<void>;
   saveWorkout: (w: Workout) => Promise<void>;
