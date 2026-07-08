@@ -31,6 +31,7 @@ import {
   getRedirectResult,
   onAuthStateChanged,
   signInAnonymously,
+  signInWithPopup,
   signInWithRedirect,
   signOut,
   type User,
@@ -214,20 +215,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInGoogle = useCallback(async () => {
-    console.log("[auth] signInGoogle called, configured=", firebaseConfigured);
     const auth = getFirebaseAuth();
-    console.log("[auth] auth instance:", auth);
     if (!auth) throw new Error("Firebase not configured");
+    const provider = new GoogleAuthProvider();
     try {
-      console.log("[auth] calling signInWithPopup...");
-      await signInWithPopup(auth, new GoogleAuthProvider());
-      console.log("[auth] signInWithPopup resolved");
-    } catch (e) {
-      console.error("[auth] signInWithPopup threw:", e);
-      // If popup is blocked or fails, fall back to redirect
-      console.log("[auth] falling back to signInWithRedirect");
-      await signInWithRedirect(auth, new GoogleAuthProvider());
-      console.log("[auth] signInWithRedirect resolved (page should be navigating away)");
+      return await signInWithPopup(auth, provider);
+    } catch (e: unknown) {
+      const code = (e as { code?: string } | null)?.code;
+      // Only fall back to redirect for errors that mean the popup itself can't run.
+      if (code === "auth/popup-blocked" || code === "auth/operation-not-supported-in-this-environment") {
+        return signInWithRedirect(auth, provider);
+      }
+      // popup-closed-by-user, cancelled-popup-request, unauthorized-domain, etc. — surface, don't loop.
+      throw e;
     }
   }, []);
 
