@@ -876,3 +876,234 @@ body {
   background: var(--accent);
   color: var(--bg);
 }
+
+/* -------------------------------------------------------------------------- */
+/*  Templates page                                                              */
+/* -------------------------------------------------------------------------- */
+
+.tpl-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 2px 4px;
+}
+.tpl-head-h {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 1.5rem;
+  line-height: 1.05;
+  color: var(--fg);
+  margin-top: 2px;
+}
+.tpl-empty {
+  border: 1px dashed var(--border-strong);
+  background: var(--bg-elev);
+  border-radius: var(--radius);
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+.tpl-empty-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.15rem;
+  color: var(--fg);
+}
+.tpl-empty-sub {
+  font-size: 12px;
+  color: var(--fg-muted);
+  line-height: 1.5;
+}
+.tpl-empty-cta {
+  margin-top: 8px;
+}
+.tpl-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tpl-card {
+  display: flex;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.tpl-card-body {
+  flex: 1 1 auto;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  min-width: 0;
+}
+.tpl-card-body:active {
+  background: var(--bg-elev-2);
+}
+.tpl-card-name {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.1rem;
+  line-height: 1.1;
+  color: var(--fg);
+  text-transform: lowercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tpl-card-items {
+  font-size: 10px;
+  color: var(--fg-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+.tpl-card-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.tpl-card-empty {
+  font-size: 11px;
+  color: var(--fg-faint);
+  font-family: var(--font-mono);
+}
+.tpl-card-actions {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border);
+}
+.tpl-card-run {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  min-width: 64px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+}
+.tpl-card-run:active {
+  background: var(--accent-bg);
+}
+.tpl-card-del {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  min-height: 36px;
+  background: transparent;
+  border: 0;
+  color: var(--fg-faint);
+  font-size: 18px;
+  cursor: pointer;
+}
+.tpl-card-del:active {
+  color: var(--danger);
+  background: rgba(209, 75, 47, 0.12);
+}
+
+.tpl-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+.tpl-edit-name {
+  height: 48px;
+  font-size: 16px;
+}
+.tpl-edit-empty {
+  font-size: 12px;
+  color: var(--fg-faint);
+  text-align: center;
+  padding: 12px 0;
+  font-family: var(--font-mono);
+}
+.tpl-edit-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tpl-edit-row {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  border-radius: var(--radius);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tpl-edit-ex {
+  height: 40px;
+}
+.tpl-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.tpl-edit-num {
+  height: 40px;
+  text-align: center;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+.tpl-edit-rm {
+  align-self: flex-start;
+  background: transparent;
+  border: 0;
+  padding: 4px 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+}
+.tpl-edit-rm:active {
+  color: var(--danger);
+}
+.tpl-edit-add {
+  align-self: flex-start;
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+  color: var(--fg-dim);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.tpl-edit-add:active {
+  color: var(--fg);
+  border-color: var(--border-strong);
+}
+.tpl-edit-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+}

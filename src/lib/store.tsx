@@ -180,10 +180,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const ref = doc(collection(db, "users", user.uid, "exercises"));
         batch.set(ref, { ...ex, createdAt: base });
       }
-      for (const t of DEFAULT_TEMPLATES) {
-        const ref = doc(collection(db, "users", user.uid, "templates"));
-        batch.set(ref, { ...stripIds(t), createdAt: base, updatedAt: base });
-      }
       await batch.commit();
       window.localStorage.setItem(seedKey, "1");
     })();
@@ -197,7 +193,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const next = {
         workouts: local.workouts,
         exercises: DEFAULT_EXERCISES.map((e, i) => ({ ...e, id: `e_${i}` })),
-        templates: DEFAULT_TEMPLATES.map((t, i) => ({ ...stripIds(t), id: `t_${i}`, createdAt: Date.now(), updatedAt: Date.now() })),
+        templates: [],
       };
       writeLocal(next);
       setExercises(next.exercises);
@@ -250,12 +246,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const db = getDb();
         if (!db) return;
         const ref = w.id ? doc(db, "users", user.uid, "workouts", w.id) : doc(collection(db, "users", user.uid, "workouts"));
-        await setDoc(ref, { ...w, updatedAt: serverTimestamp() }, { merge: false });
+        await setDoc(ref, stripUndef({ ...w, updatedAt: serverTimestamp() }), { merge: false });
         return;
       }
       persistLocal((s) => {
         const i = s.workouts.findIndex((x) => x.id === w.id);
-        const next = { ...w, updatedAt: Date.now() };
+        const next = stripUndef({ ...w, updatedAt: Date.now() });
         const arr = [...s.workouts];
         if (i >= 0) arr[i] = next;
         else arr.unshift({ ...next, id: w.id || nanoid(10), createdAt: Date.now() });
@@ -285,13 +281,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const db = getDb();
         if (!db) return;
         const ref = t.id ? doc(db, "users", user.uid, "templates", t.id) : doc(collection(db, "users", user.uid, "templates"));
-        await setDoc(ref, { ...t, updatedAt: serverTimestamp() }, { merge: false });
+        await setDoc(ref, stripUndef({ ...t, updatedAt: serverTimestamp() }), { merge: false });
         return;
       }
       persistLocal((s) => {
         const i = s.templates.findIndex((x) => x.id === t.id);
         const arr = [...s.templates];
-        const next = { ...t, updatedAt: Date.now() };
+        const next = stripUndef({ ...t, updatedAt: Date.now() });
         if (i >= 0) arr[i] = next;
         else arr.push({ ...next, id: t.id || nanoid(10), createdAt: Date.now() });
         return { ...s, templates: arr };
@@ -320,14 +316,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const db = getDb();
         if (!db) return;
         const ref = e.id ? doc(db, "users", user.uid, "exercises", e.id) : doc(collection(db, "users", user.uid, "exercises"));
-        await setDoc(ref, { ...e }, { merge: false });
+        await setDoc(ref, stripUndef({ ...e }), { merge: false });
         return;
       }
       persistLocal((s) => {
         const i = s.exercises.findIndex((x) => x.id === e.id);
         const arr = [...s.exercises];
-        if (i >= 0) arr[i] = e;
-        else arr.push({ ...e, id: e.id || nanoid(8) });
+        const next = stripUndef(e);
+        if (i >= 0) arr[i] = next;
+        else arr.push({ ...next, id: e.id || nanoid(8) });
         return { ...s, exercises: arr };
       });
     },
@@ -446,31 +443,7 @@ const DEFAULT_EXERCISES: Exercise[] = [
   { id: "ex_spider_curl", name: "Spider curl", defaultUnit: "kg", category: "pull" },
 ];
 
-const DEFAULT_TEMPLATES: Array<Template & { id: string }> = [
-  {
-    id: "tpl_push",
-    name: "Push",
-    createdAt: 0,
-    updatedAt: 0,
-    items: [
-      { exerciseName: "Press isolateral", defaultSets: 3, defaultReps: 8, defaultWeight: 5, defaultUnit: "kg" },
-      { exerciseName: "Fly", defaultSets: 3, defaultReps: 10, defaultWeight: 4, defaultUnit: "plate" },
-      { exerciseName: "Lateral raise", defaultSets: 3, defaultReps: 10, defaultWeight: 6, defaultUnit: "kg" },
-      { exerciseName: "Tricep extension", defaultSets: 3, defaultReps: 8, defaultWeight: 2, defaultUnit: "plate" },
-    ],
-  },
-  {
-    id: "tpl_pull",
-    name: "Pull",
-    createdAt: 0,
-    updatedAt: 0,
-    items: [
-      { exerciseName: "Lat pulldown", defaultSets: 3, defaultReps: 8, defaultWeight: 6, defaultUnit: "plate" },
-      { exerciseName: "Low row", defaultSets: 3, defaultReps: 8, defaultWeight: 7.5, defaultUnit: "kg" },
-      { exerciseName: "Spider curl", defaultSets: 3, defaultReps: 8, defaultWeight: 6, defaultUnit: "kg" },
-    ],
-  },
-];
+const DEFAULT_TEMPLATES: never[] = []; // no prebuilt templates — users build their own
 
 /* -------------------------------------------------------------------------- */
 /*  Firestore <-> domain mappers                                               */
@@ -479,6 +452,19 @@ const DEFAULT_TEMPLATES: Array<Template & { id: string }> = [
 function stripIds<T extends { id: string }>(o: T): Omit<T, "id"> {
   const { id: _id, ...rest } = o;
   return rest;
+}
+
+// Firestore rejects `undefined` field values. Recursively prune them.
+function stripUndef<T>(v: T): T {
+  if (Array.isArray(v)) return v.map(stripUndef) as unknown as T;
+  if (v && typeof v === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
+      if (val !== undefined) out[k] = stripUndef(val);
+    }
+    return out as T;
+  }
+  return v;
 }
 
 function toWorkout(id: string, raw: DocumentData): Workout {

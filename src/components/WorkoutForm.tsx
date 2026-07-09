@@ -23,9 +23,7 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
   const [date, setDate] = useState(initial?.date ?? today());
   const [durationMin, setDurationMin] = useState<number | undefined>(initial?.durationMin);
   const [notes, setNotes] = useState(initial?.notes ?? "");
-  const [logs, setLogs] = useState<ExerciseLog[]>(() =>
-    initial?.exercises ?? [{ name: "Press isolateral", sets: [blankSet("kg", 0, 0)] }]
-  );
+  const [logs, setLogs] = useState<ExerciseLog[]>(() => initial?.exercises ?? []);
   const [showNotes, setShowNotes] = useState(Boolean(initial?.notes));
   const [showMeta, setShowMeta] = useState(false);
   const [activeEx, setActiveEx] = useState<number | null>(null);
