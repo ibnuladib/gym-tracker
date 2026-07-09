@@ -31,7 +31,7 @@
   --heat-3: #b07a25;
   --heat-4: #e8a33d;
   --radius: 0.25rem;
-  --tap: 44px;
+  --tap: 48px;
 }
 
 html,
@@ -311,4 +311,568 @@ body {
   font-size: 11px;
   color: var(--fg-faint);
   font-family: var(--font-mono);
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Phone-first workout form                                                    */
+/* -------------------------------------------------------------------------- */
+
+.wpage {
+  /* leaves room for the bottom nav, no extra page padding */
+}
+
+.wform {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 8px;
+}
+
+.wform-tpl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 2px;
+}
+
+/* One exercise. A wide hairline card. Tapping the head focuses it. */
+.exercise {
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  border-radius: var(--radius);
+  padding: 10px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.exercise.is-active {
+  border-color: var(--accent-border);
+}
+.exercise-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 0 2px;
+}
+.exercise-name {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.25rem;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+  flex: 1 1 auto;
+  min-width: 0;
+  text-transform: lowercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.exercise-meta {
+  font-size: 10px;
+  color: var(--fg-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+.exercise-rm {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--fg-faint);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: color 120ms ease, background 120ms ease;
+}
+.exercise-rm:active {
+  color: var(--danger);
+  background: var(--bg);
+}
+.exercise-sets {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.exercise-add {
+  align-self: flex-start;
+  height: 36px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--fg-dim);
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  letter-spacing: 0.06em;
+}
+.exercise-add:active {
+  color: var(--fg);
+  border-color: var(--border-strong);
+}
+
+/* The big set row. Single horizontal band, weight | reps, steppers flanking. */
+.bigset {
+  display: grid;
+  grid-template-columns: 26px 28px 1fr 28px 14px 28px 1fr 28px 28px;
+  align-items: stretch;
+  gap: 0;
+  min-height: 56px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  border-radius: var(--radius);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background 120ms ease, border-color 120ms ease, transform 60ms ease;
+}
+.bigset:active {
+  transform: scale(0.997);
+  background: var(--bg-elev);
+}
+.bigset.is-done {
+  background: var(--bg-elev);
+  border-color: var(--border);
+  opacity: 0.55;
+}
+.bigset.is-done .bigset-num {
+  color: var(--accent);
+  background: transparent;
+}
+.bigset.is-done .bigset-input {
+  color: var(--fg-muted);
+}
+.bigset-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--fg-dim);
+  background: var(--bg-elev);
+  border-right: 1px solid var(--border);
+  letter-spacing: 0.04em;
+}
+.bigset-step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--fg-dim);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  user-select: none;
+  -webkit-user-select: none;
+}
+.bigset-step:hover {
+  color: var(--fg);
+}
+.bigset-step:active {
+  color: var(--accent);
+  background: var(--bg-elev);
+}
+.bigset-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+.bigset-input {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--fg);
+  padding: 0;
+  -moz-appearance: textfield;
+}
+.bigset-input::-webkit-outer-spin-button,
+.bigset-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.bigset-input::placeholder {
+  color: var(--fg-faint);
+}
+.bigset-unit {
+  position: absolute;
+  right: 6px;
+  bottom: 4px;
+  font-size: 9px;
+  font-family: var(--font-mono);
+  color: var(--fg-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  pointer-events: none;
+}
+.bigset-x {
+  background: var(--bg-elev);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+.bigset-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--fg-faint);
+  background: transparent;
+  border: 0;
+  border-left: 1px solid var(--border);
+  border-top-right-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+  cursor: pointer;
+}
+.bigset-remove:hover {
+  color: var(--danger);
+}
+.bigset-remove:active {
+  color: var(--danger);
+  background: rgba(209, 75, 47, 0.12);
+}
+
+/* Add-exercise + below-form controls */
+.wform-addex {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 56px;
+  padding: 0 14px;
+  background: var(--bg-elev);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--fg);
+  font-size: 15px;
+  font-family: var(--font-mono);
+  text-transform: lowercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+.wform-addex:active {
+  background: var(--bg-elev-2);
+  border-color: var(--accent-border);
+  color: var(--accent-fg);
+}
+.wform-addex-plus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  color: var(--accent);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.wform-notes-toggle,
+.wform-meta-toggle {
+  align-self: flex-start;
+  background: transparent;
+  border: 0;
+  padding: 0 2px;
+  font-size: 11px;
+  color: var(--fg-faint);
+  font-family: var(--font-mono);
+  text-transform: lowercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+.wform-notes-toggle:hover,
+.wform-meta-toggle:hover {
+  color: var(--fg-muted);
+}
+.wform-notes {
+  resize: vertical;
+  height: auto;
+  min-height: 60px;
+  padding: 10px 12px;
+}
+.wform-meta {
+  display: flex;
+  gap: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  border-radius: var(--radius);
+  padding: 10px;
+}
+.wform-meta-row {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.wform-meta-row .input {
+  height: 40px;
+}
+.wform-error {
+  font-size: 12px;
+  color: var(--danger-fg);
+  font-family: var(--font-mono);
+  padding: 0 2px;
+}
+.wform-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 6px 4px 2px;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+.wform-foot .stamp {
+  color: var(--fg-faint);
+  margin-right: 2px;
+}
+.wform-cancel {
+  align-self: center;
+  background: transparent;
+  border: 0;
+  color: var(--fg-faint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.wform-cancel:active {
+  color: var(--fg);
+}
+.wform-delete {
+  align-self: center;
+  background: transparent;
+  border: 0;
+  color: var(--danger-fg);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Exercise bottom sheet                                                       */
+/* -------------------------------------------------------------------------- */
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fadeIn 160ms ease-out;
+}
+.sheet {
+  width: 100%;
+  max-width: 32rem;
+  background: var(--bg-elev);
+  border-top: 1px solid var(--border-strong);
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+  padding: 6px 14px max(env(safe-area-inset-bottom), 16px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: sheetUp 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.sheet-handle {
+  align-self: center;
+  width: 36px;
+  height: 4px;
+  background: var(--border-strong);
+  border-radius: 2px;
+  margin: 6px 0 2px;
+}
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0 2px;
+}
+.sheet-close {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--fg-muted);
+  cursor: pointer;
+  border-radius: var(--radius);
+}
+.sheet-input {
+  height: 48px;
+  font-size: 16px;
+}
+.sheet-units {
+  display: flex;
+  gap: 6px;
+}
+.sheet-unit {
+  flex: 1 1 0;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+}
+.sheet-unit.is-on {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  color: var(--accent-fg);
+}
+.sheet-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+.sheet-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 15px;
+  color: var(--fg);
+  text-align: left;
+  text-transform: lowercase;
+  cursor: pointer;
+  font-family: var(--font-mono);
+}
+.sheet-list li:last-child .sheet-item {
+  border-bottom: 0;
+}
+.sheet-item:active {
+  background: var(--bg-elev-2);
+  color: var(--accent-fg);
+}
+.sheet-item.is-custom {
+  color: var(--accent);
+  font-weight: 500;
+}
+.sheet-item-unit {
+  font-size: 10px;
+  color: var(--fg-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+.sheet-empty {
+  padding: 16px;
+  font-size: 12px;
+  color: var(--fg-faint);
+  text-align: center;
+  font-family: var(--font-mono);
+}
+
+@keyframes sheetUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Nav center: add | finish                                                     */
+/* -------------------------------------------------------------------------- */
+
+.nav-add,
+.nav-finish {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 56px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--fg-dim);
+  background: transparent;
+  border: 0;
+  border-left: 1px solid var(--border);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  text-decoration: none;
+  transition: color 120ms ease, background 120ms ease;
+}
+.nav-add:hover,
+.nav-finish:hover {
+  color: var(--fg);
+  background: var(--bg-elev);
+}
+.nav-add:active,
+.nav-finish:active {
+  background: var(--bg-elev-2);
+}
+.nav-add-plus,
+.nav-finish-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elev);
+  color: var(--fg);
+  border-radius: 50%;
+}
+.nav-add-plus {
+  border-color: var(--accent-border);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+.nav-finish {
+  color: var(--fg);
+}
+.nav-finish-check {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--bg);
 }

@@ -6,9 +6,6 @@ import { useMemo } from "react";
 import { dailyVolume } from "@/lib/prs";
 import { toKg } from "@/lib/units";
 
-function fmtDate(d: Date) {
-  return d.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
-}
 function dayKey(d: Date) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -54,8 +51,7 @@ export default function Home() {
       {/* Signature — big slab-serif reading inside a hairline frame */}
       <section className="relative border border-border bg-bg px-5 py-6 sm:px-7 sm:py-8">
         <div className="mb-4 flex items-center justify-between">
-          <span className="stamp">vol. 7d · kg × reps</span>
-          <span className="stamp">{fmtDate(new Date())}</span>
+          <span className="stamp">7-day volume · kg × reps</span>
         </div>
         <div className="readout">
           {Math.round(metrics.weekVol).toLocaleString()}
@@ -67,17 +63,8 @@ export default function Home() {
           <Cell label="today" value={todays.length > 0 ? `${todays.length}` : "rest"} accent={todays.length > 0} />
         </div>
         <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
-          <span className="hint">no sessions on the clock? tap below to log one.</span>
-          <Link
-            href="/workout/new"
-            className="btn btn-primary btn-sm"
-            aria-label="Log a workout"
-          >
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            <span>log</span>
-          </Link>
+          <span className="hint">no sessions on the clock</span>
+          <span className="hint">log from the bar below</span>
         </div>
       </section>
 

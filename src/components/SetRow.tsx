@@ -1,7 +1,7 @@
 "use client";
 
-import { ALL_UNITS, unitShort } from "@/lib/units";
-import type { SetEntry, Unit } from "@/lib/types";
+import { unitShort } from "@/lib/units";
+import type { SetEntry } from "@/lib/types";
 
 interface Props {
   set: SetEntry;
@@ -9,130 +9,135 @@ interface Props {
   done?: boolean;
   onChange: (s: SetEntry) => void;
   onRemove: () => void;
-  onToggleDone?: () => void;
+  onCommit?: () => void;
 }
 
-export function SetRow({ set, index, done, onChange, onRemove, onToggleDone }: Props) {
+// One row per set. Big tappable, weight and reps dominate visually.
+// Tap the row body to "log & next" (the most common move).
+// The +/- flank the number; long-press or remove via the trailing menu.
+export function SetRow({ set, index, done, onChange, onRemove, onCommit }: Props) {
   return (
     <div
       className={
-        "grid grid-cols-[2rem_1fr_3.5rem_2.5rem] items-center gap-1.5 border p-1.5 text-sm transition-colors " +
-        (done
-          ? "border-accent-border bg-accent-bg"
-          : "border-border bg-bg")
+        "bigset " + (done ? "is-done" : "")
       }
+      role={onCommit ? "button" : undefined}
+      tabIndex={onCommit ? 0 : undefined}
+      onClick={onCommit}
+      onKeyDown={
+        onCommit
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onCommit();
+              }
+            }
+          : undefined
+      }
+      aria-label={done ? `set ${index + 1} logged` : `log set ${index + 1}`}
     >
-      <button
-        type="button"
-        onClick={onToggleDone}
-        aria-pressed={done ? "true" : "false"}
-        aria-label={done ? "Mark set incomplete" : "Mark set done"}
-        className={
-          "flex h-7 w-8 items-center justify-center text-xs font-medium transition-colors " +
-          (done
-            ? "bg-accent text-bg"
-            : "bg-elev text-fg-dim hover:text-fg")
-        }
-        style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.04em" }}
-      >
-        {done ? (
-          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M5 12l5 5 9-9" />
-          </svg>
-        ) : (
-          `#${index + 1}`
-        )}
-      </button>
-
-      <div className="flex items-center gap-1">
-        <div className="flex flex-1 items-center overflow-hidden border border-border bg-bg">
-          <button
-            type="button"
-            aria-label="decrease weight"
-            className="flex h-8 w-7 items-center justify-center text-fg-dim transition-colors hover:bg-elev hover:text-fg"
-            onClick={() => onChange({ ...set, weight: Math.max(0, roundStep(set.weight - (set.unit === "lb" ? 5 : 2.5))) })}
-          >−</button>
-          <input
-            inputMode="decimal"
-            pattern="[0-9]*"
-            aria-label="weight"
-            className="num h-8 w-full bg-transparent px-1 text-center text-sm outline-none placeholder:text-fg-faint"
-            value={set.weight === 0 ? "" : set.weight}
-            placeholder="wt"
-            onChange={(e) => onChange({ ...set, weight: parseFloat(e.target.value) || 0 })}
-          />
-          <button
-            type="button"
-            aria-label="increase weight"
-            className="flex h-8 w-7 items-center justify-center text-fg-dim transition-colors hover:bg-elev hover:text-fg"
-            onClick={() => onChange({ ...set, weight: roundStep(set.weight + (set.unit === "lb" ? 5 : 2.5)) })}
-          >+</button>
-        </div>
-        <UnitPicker unit={set.unit} onChange={(u) => onChange({ ...set, unit: u })} />
+      <div className="bigset-num" aria-hidden>
+        {index + 1}
       </div>
 
-      <div className="flex items-center overflow-hidden border border-border bg-bg">
-        <button
-          type="button"
-          aria-label="decrease reps"
-          className="flex h-8 w-6 items-center justify-center text-fg-dim transition-colors hover:bg-elev hover:text-fg"
-          onClick={() => onChange({ ...set, reps: Math.max(0, set.reps - 1) })}
-        >−</button>
+      <button
+        type="button"
+        aria-label="decrease weight"
+        className="bigset-step"
+        onClick={(e) => {
+          e.stopPropagation();
+          onChange({ ...set, weight: roundStep(Math.max(0, set.weight - stepFor(set.unit))) });
+        }}
+      >
+        −
+      </button>
+
+      <div className="bigset-cell" onClick={(e) => e.stopPropagation()}>
+        <input
+          inputMode="decimal"
+          pattern="[0-9]*"
+          aria-label="weight"
+          className="bigset-input num"
+          value={set.weight === 0 ? "" : set.weight}
+          placeholder="0"
+          onChange={(e) => onChange({ ...set, weight: parseFloat(e.target.value) || 0 })}
+        />
+        <div className="bigset-unit">{unitShort(set.unit)}</div>
+      </div>
+
+      <button
+        type="button"
+        aria-label="increase weight"
+        className="bigset-step"
+        onClick={(e) => {
+          e.stopPropagation();
+          onChange({ ...set, weight: roundStep(set.weight + stepFor(set.unit)) });
+        }}
+      >
+        +
+      </button>
+
+      <div className="bigset-x" aria-hidden />
+
+      <button
+        type="button"
+        aria-label="decrease reps"
+        className="bigset-step"
+        onClick={(e) => {
+          e.stopPropagation();
+          onChange({ ...set, reps: Math.max(0, set.reps - 1) });
+        }}
+      >
+        −
+      </button>
+
+      <div className="bigset-cell" onClick={(e) => e.stopPropagation()}>
         <input
           inputMode="numeric"
           pattern="[0-9]*"
           aria-label="reps"
-          className="num h-8 w-full bg-transparent text-center text-sm outline-none placeholder:text-fg-faint"
+          className="bigset-input num"
           value={set.reps === 0 ? "" : set.reps}
-          placeholder="reps"
+          placeholder="0"
           onChange={(e) => onChange({ ...set, reps: parseInt(e.target.value, 10) || 0 })}
         />
-        <button
-          type="button"
-          aria-label="increase reps"
-          className="flex h-8 w-6 items-center justify-center text-fg-dim transition-colors hover:bg-elev hover:text-fg"
-          onClick={() => onChange({ ...set, reps: set.reps + 1 })}
-        >+</button>
+        <div className="bigset-unit">reps</div>
       </div>
 
       <button
         type="button"
-        onClick={onRemove}
-        aria-label="remove set"
-        className="flex h-8 w-8 items-center justify-center text-fg-dim transition-colors hover:bg-elev hover:text-danger"
+        aria-label="increase reps"
+        className="bigset-step"
+        onClick={(e) => {
+          e.stopPropagation();
+          onChange({ ...set, reps: set.reps + 1 });
+        }}
       >
-        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <path d="M6 6l12 12M18 6L6 18" />
-        </svg>
+        +
+      </button>
+
+      <button
+        type="button"
+        aria-label="remove set"
+        className="bigset-remove"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove();
+        }}
+      >
+        ×
       </button>
     </div>
   );
 }
 
-function UnitPicker({ unit, onChange }: { unit: Unit; onChange: (u: Unit) => void }) {
-  return (
-    <div className="flex shrink-0 overflow-hidden border border-border bg-bg text-2xs">
-      {ALL_UNITS.map((u) => (
-        <button
-          key={u}
-          type="button"
-          aria-pressed={u === unit}
-          aria-label={u}
-          onClick={() => onChange(u)}
-          className={
-            "flex h-8 w-7 items-center justify-center transition-colors " +
-            (u === unit
-              ? "bg-accent-bg text-accent"
-              : "text-fg-dim hover:bg-elev hover:text-fg")
-          }
-        >
-          {unitShort(u)}
-        </button>
-      ))}
-    </div>
-  );
+function stepFor(unit: SetEntry["unit"]): number {
+  if (unit === "lb") return 5;
+  if (unit === "plate") return 1.25; // a plate side
+  if (unit === "bw") return 0;
+  return 2.5; // kg default
 }
 
 function roundStep(n: number) {
-  return Math.round(n * 4) / 4; // quarter increments (0.25kg) for finer control
+  return Math.round(n * 4) / 4;
 }

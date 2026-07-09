@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SetRow } from "./SetRow";
+import { ExerciseSheet } from "./ExerciseSheet";
 import { nanoid } from "nanoid";
 import type { ExerciseLog, SetEntry, Template, Unit, Workout } from "@/lib/types";
-import { ALL_UNITS, formatWeight, unitLabel, toKg } from "@/lib/units";
+import { toKg } from "@/lib/units";
 
 interface Props {
   templates: Template[];
@@ -19,42 +20,64 @@ function blankSet(unit: Unit, weight = 0, reps = 0): SetEntry {
 }
 
 export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel }: Props) {
-  const [name, setName] = useState(initial?.name ?? "");
   const [date, setDate] = useState(initial?.date ?? today());
   const [durationMin, setDurationMin] = useState<number | undefined>(initial?.durationMin);
   const [notes, setNotes] = useState(initial?.notes ?? "");
-  const [logs, setLogs] = useState<ExerciseLog[]>(initial?.exercises ?? []);
-  const [customName, setCustomName] = useState("");
+  const [logs, setLogs] = useState<ExerciseLog[]>(() =>
+    initial?.exercises ?? [{ name: "Press isolateral", sets: [blankSet("kg", 0, 0)] }]
+  );
+  const [showNotes, setShowNotes] = useState(Boolean(initial?.notes));
+  const [showMeta, setShowMeta] = useState(false);
+  const [activeEx, setActiveEx] = useState<number | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Open the sheet on a fresh workout so the user picks the first exercise.
+  // On edit, leave the existing logs alone.
+  useEffect(() => {
+    if (!initial) setSheetOpen(true);
+  }, [initial]);
+
+  // The nav's "finish" button dispatches this event.
+  useEffect(() => {
+    const onFinish = () => {
+      void finish();
+    };
+    window.addEventListener("gym:finish", onFinish);
+    return () => window.removeEventListener("gym:finish", onFinish);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [logs, date, durationMin, notes, initial]);
 
   const applyTemplate = (tplId: string) => {
     const t = templates.find((x) => x.id === tplId);
     if (!t) return;
-    setName(t.name);
     setLogs(
       t.items.map((it) => {
         const ex = exercises.find((e) => e.name.toLowerCase() === it.exerciseName.toLowerCase());
         const unit = it.defaultUnit ?? ex?.defaultUnit ?? "kg";
         return {
           name: it.exerciseName,
-          sets: Array.from({ length: it.defaultSets }, () =>
-            blankSet(unit, it.defaultWeight ?? 0, it.defaultReps)
-          ),
+          sets: [blankSet(unit, it.defaultWeight ?? 0, it.defaultReps ?? 0)],
         };
       })
     );
   };
 
-  const addExercise = (exerciseName: string) => {
-    if (!exerciseName) return;
-    if (logs.some((l) => l.name.toLowerCase() === exerciseName.toLowerCase())) return;
-    const ex = exercises.find((e) => e.name.toLowerCase() === exerciseName.toLowerCase());
-    const unit = ex?.defaultUnit ?? "kg";
-    setLogs([...logs, { name: exerciseName, sets: [blankSet(unit, 0, 0), blankSet(unit, 0, 0), blankSet(unit, 0, 0)] }]);
+  const addExercise = (name: string, unit: Unit) => {
+    if (logs.some((l) => l.name.toLowerCase() === name.toLowerCase())) {
+      const idx = logs.findIndex((l) => l.name.toLowerCase() === name.toLowerCase());
+      setActiveEx(idx);
+      return;
+    }
+    setLogs([...logs, { name, sets: [blankSet(unit, 0, 0)] }]);
+    setActiveEx(logs.length);
   };
 
-  const removeExercise = (i: number) => setLogs(logs.filter((_, idx) => idx !== i));
+  const removeExercise = (i: number) => {
+    setLogs(logs.filter((_, idx) => idx !== i));
+    if (activeEx === i) setActiveEx(null);
+  };
 
   const updateSet = (i: number, s: number, next: SetEntry) => {
     setLogs(
@@ -64,7 +87,25 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
 
   const addSet = (i: number) => {
     setLogs(
-      logs.map((l, idx) => (idx === i ? { ...l, sets: [...l.sets, blankSet(l.sets.at(-1)?.unit ?? "kg", 0, 0)] } : l))
+      logs.map((l, idx) =>
+        idx === i
+          ? { ...l, sets: [...l.sets, blankSet(l.sets.at(-1)?.unit ?? "kg", 0, 0)] }
+          : l
+      )
+    );
+  };
+
+  // "Log & next" — the dominant gesture. Marks the current set done
+  // and immediately queues the next one with the same weight/reps.
+  const commitSet = (i: number, s: number) => {
+    setLogs((prev) =>
+      prev.map((l, idx) => {
+        if (idx !== i) return l;
+        const cur = l.sets[s];
+        if (!cur || (cur.weight === 0 && cur.reps === 0)) return l; // empty
+        const next: SetEntry = { ...cur };
+        return { ...l, sets: [...l.sets, next] };
+      })
     );
   };
 
@@ -82,14 +123,13 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
     0
   );
 
-  const submit = async () => {
+  const totalSets = logs.reduce((a, l) => a + l.sets.length, 0);
+
+  const finish = async () => {
     if (saving) return;
-    if (!name.trim()) {
-      setError("name your session before saving");
-      return;
-    }
-    if (logs.every((l) => l.sets.length === 0)) {
-      setError("add at least one exercise");
+    const realLogs = logs.filter((l) => l.sets.some((s) => s.weight > 0 || s.reps > 0));
+    if (realLogs.length === 0) {
+      setError("log at least one set");
       return;
     }
     setError(null);
@@ -97,11 +137,12 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
     try {
       const w: Workout = {
         id: initial?.id ?? nanoid(10),
-        name: name.trim(),
+        // Default the name to the first exercise — easy to rename later.
+        name: initial?.name || realLogs[0].name,
         date,
         durationMin,
         notes: notes || undefined,
-        exercises: logs.filter((l) => l.sets.length > 0),
+        exercises: realLogs,
         createdAt: initial?.createdAt ?? Date.now(),
         updatedAt: Date.now(),
       };
@@ -114,135 +155,160 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
   };
 
   return (
-    <div className="space-y-4">
-      <div className="card space-y-3">
-        <div className="flex flex-wrap items-end gap-2">
-          <div className="flex-1 min-w-[10rem]">
-            <div className="label mb-1">name</div>
-            <input className="input" value={name} placeholder="e.g. Push" onChange={(e) => setName(e.target.value)} />
+    <div className="wform">
+      {templates.length > 0 && (
+        <div className="wform-tpl">
+          {templates.map((t) => (
+            <button
+              key={t.id}
+              className="chip"
+              onClick={() => applyTemplate(t.id)}
+            >
+              {t.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {logs.map((log, i) => {
+        const isActive = activeEx === i || (activeEx === null && i === 0);
+        return (
+          <section
+            key={i}
+            className={"exercise " + (isActive ? "is-active" : "")}
+            onClick={() => setActiveEx(i)}
+          >
+            <header className="exercise-head">
+              <div className="exercise-name">{log.name}</div>
+              <div className="exercise-meta num">
+                {log.sets.length} {log.sets.length === 1 ? "set" : "sets"}
+              </div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeExercise(i);
+                }}
+                className="exercise-rm"
+                aria-label={`remove ${log.name}`}
+              >
+                ×
+              </button>
+            </header>
+
+            <div className="exercise-sets">
+              {log.sets.map((s, sIdx) => (
+                <SetRow
+                  key={sIdx}
+                  set={s}
+                  index={sIdx}
+                  done={sIdx < log.sets.length - 1}
+                  onChange={(next) => updateSet(i, sIdx, next)}
+                  onRemove={() => removeSet(i, sIdx)}
+                  onCommit={sIdx === log.sets.length - 1 ? () => commitSet(i, sIdx) : undefined}
+                />
+              ))}
+            </div>
+
+            <button
+              type="button"
+              className="exercise-add"
+              onClick={(e) => {
+                e.stopPropagation();
+                addSet(i);
+              }}
+            >
+              + add set
+            </button>
+          </section>
+        );
+      })}
+
+      <button
+        type="button"
+        className="wform-addex"
+        onClick={() => setSheetOpen(true)}
+      >
+        <span className="wform-addex-plus">+</span>
+        <span>add exercise</span>
+      </button>
+
+      {showNotes ? (
+        <textarea
+          className="input wform-notes"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="notes"
+          rows={2}
+        />
+      ) : (
+        <button
+          type="button"
+          className="wform-notes-toggle"
+          onClick={() => setShowNotes(true)}
+        >
+          + notes
+        </button>
+      )}
+
+      {showMeta ? (
+        <div className="wform-meta">
+          <div className="wform-meta-row">
+            <div className="label">date</div>
+            <input
+              className="input"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
           </div>
-          <div className="w-32">
-            <div className="label mb-1">date</div>
-            <input className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-          </div>
-          <div className="w-20">
-            <div className="label mb-1">min</div>
+          <div className="wform-meta-row">
+            <div className="label">minutes</div>
             <input
               className="input"
               inputMode="numeric"
               value={durationMin ?? ""}
-              onChange={(e) => setDurationMin(e.target.value ? parseInt(e.target.value, 10) : undefined)}
+              onChange={(e) =>
+                setDurationMin(e.target.value ? parseInt(e.target.value, 10) : undefined)
+              }
             />
           </div>
         </div>
-        {templates.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="label">template:</span>
-            {templates.map((t) => (
-              <button key={t.id} className="chip transition-colors hover:border-accent-border hover:text-accent-fg" onClick={() => applyTemplate(t.id)}>
-                {t.name}
-              </button>
-            ))}
-          </div>
-        )}
+      ) : (
+        <button
+          type="button"
+          className="wform-meta-toggle num"
+          onClick={() => setShowMeta(true)}
+        >
+          {date} · {durationMin ? `${durationMin}m` : "—"}
+        </button>
+      )}
+
+      {error && <div className="wform-error">{error}</div>}
+
+      <div className="wform-foot num">
+        <span>
+          <span className="stamp">vol</span>{" "}
+          {Math.round(totalVolume).toLocaleString()}kg
+        </span>
+        <span>
+          <span className="stamp">sets</span> {totalSets}
+        </span>
       </div>
 
-      {logs.map((log, i) => (
-        <div key={i} className="card space-y-2 animate-fade-in">
-          <div className="flex items-center justify-between">
-            <div className="font-display text-lg font-light tracking-tight text-fg">{log.name}</div>
-            <button onClick={() => removeExercise(i)} className="text-2xs text-fg-dim transition-colors hover:text-danger">
-              remove
-            </button>
-          </div>
-          <div className="space-y-1.5">
-            {log.sets.map((s, sIdx) => (
-              <SetRow key={sIdx} set={s} index={sIdx} onChange={(next) => updateSet(i, sIdx, next)} onRemove={() => removeSet(i, sIdx)} />
-            ))}
-          </div>
-          <div className="num flex items-center justify-between text-2xs text-fg-dim">
-            <button onClick={() => addSet(i)} className="btn btn-ghost h-7 px-2 text-2xs">
-              + add set
-            </button>
-            <span>
-              vol {Math.round(log.sets.reduce((a, s) => {
-                if (s.unit === "bw") return a + s.reps;
-                return a + toKg(s) * s.reps;
-              }, 0))}kg
-            </span>
-          </div>
-        </div>
-      ))}
+      {onCancel && (
+        <button className="btn wform-cancel" onClick={onCancel}>
+          cancel
+        </button>
+      )}
 
-      <div className="card space-y-3">
-        <div className="label">add exercise</div>
-        <div className="flex flex-wrap gap-1.5">
-          {exercises
-            .filter((e) => !logs.some((l) => l.name.toLowerCase() === e.name.toLowerCase()))
-            .slice(0, 24)
-            .map((e) => (
-              <button key={e.name} className="chip transition-colors hover:border-accent-border hover:text-accent-fg" onClick={() => addExercise(e.name)}>
-                + {e.name}
-              </button>
-            ))}
-        </div>
-        <div className="flex gap-2">
-          <input
-            className="input"
-            placeholder="custom exercise name"
-            value={customName}
-            onChange={(e) => setCustomName(e.target.value)}
-          />
-          <button
-            className="btn"
-            onClick={() => {
-              if (customName.trim()) {
-                addExercise(customName.trim());
-                setCustomName("");
-              }
-            }}
-          >
-            add
-          </button>
-        </div>
-      </div>
-
-      <div className="card space-y-2">
-        <div className="label">notes</div>
-        <textarea
-          className="input min-h-[60px] py-2"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="optional"
-        />
-      </div>
-
-      <div className="sticky bottom-16 z-20 -mx-4 border-t border-border bg-bg/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-2">
-          <div className="num text-2xs text-fg-dim">
-            <span className="stamp mr-2">total vol</span>
-            {Math.round(totalVolume).toLocaleString()}kg
-          </div>
-          <div className="flex flex-col items-end gap-1">
-            {error && <span className="text-2xs text-danger">{error}</span>}
-            <div className="flex gap-2">
-              {onCancel && (
-                <button className="btn" onClick={onCancel}>
-                  cancel
-                </button>
-              )}
-              <button
-                className="btn btn-primary"
-                onClick={submit}
-                disabled={saving}
-                title={!name ? "name your session first" : undefined}
-              >
-                {saving ? "saving…" : initial ? "update" : "finish"}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ExerciseSheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        exercises={exercises}
+        taken={logs.map((l) => l.name)}
+        onPick={addExercise}
+      />
     </div>
   );
 }

@@ -42,7 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`dark ${display.variable} ${mono.variable}`}>
       <body className="min-h-screen font-mono antialiased">
         <StoreProvider>
-          <div className="relative mx-auto flex min-h-screen max-w-2xl flex-col px-4 pb-28 pt-2 sm:px-6 sm:pt-4">
+          <div className="relative mx-auto flex min-h-screen max-w-2xl flex-col px-4 pb-20 pt-2 sm:px-6 sm:pt-4">
             <TopBar />
             <main className="flex-1 animate-[fadeIn_220ms_ease-out]">{children}</main>
           </div>

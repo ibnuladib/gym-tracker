@@ -3,7 +3,6 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { WorkoutForm } from "@/components/WorkoutForm";
-import { BackLink } from "@/components/BackLink";
 import { useStore } from "@/lib/store";
 import type { Workout } from "@/lib/types";
 
@@ -41,12 +40,7 @@ function NewWorkoutInner() {
   );
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <BackLink href="/" />
-        <h1 className="font-display text-2xl font-light tracking-tight text-fg">new session</h1>
-        <span className="w-10" />
-      </div>
+    <div className="wpage">
       <WorkoutForm
         templates={templates}
         exercises={exNames}
@@ -55,6 +49,7 @@ function NewWorkoutInner() {
           await saveWorkout(w);
           router.push("/history");
         }}
+        onCancel={() => router.push("/")}
       />
     </div>
   );
