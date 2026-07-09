@@ -26,6 +26,7 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
   const [logs, setLogs] = useState<ExerciseLog[]>(initial?.exercises ?? []);
   const [customName, setCustomName] = useState("");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const applyTemplate = (tplId: string) => {
     const t = templates.find((x) => x.id === tplId);
@@ -83,12 +84,20 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
 
   const submit = async () => {
     if (saving) return;
-    if (!name) return;
+    if (!name.trim()) {
+      setError("name your session before saving");
+      return;
+    }
+    if (logs.every((l) => l.sets.length === 0)) {
+      setError("add at least one exercise");
+      return;
+    }
+    setError(null);
     setSaving(true);
     try {
       const w: Workout = {
         id: initial?.id ?? nanoid(10),
-        name,
+        name: name.trim(),
         date,
         durationMin,
         notes: notes || undefined,
@@ -97,6 +106,8 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
         updatedAt: Date.now(),
       };
       await onSubmit(w);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "could not save — try again");
     } finally {
       setSaving(false);
     }
@@ -212,15 +223,23 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
             <span className="stamp mr-2">total vol</span>
             {Math.round(totalVolume).toLocaleString()}kg
           </div>
-          <div className="flex gap-2">
-            {onCancel && (
-              <button className="btn" onClick={onCancel}>
-                cancel
+          <div className="flex flex-col items-end gap-1">
+            {error && <span className="text-2xs text-danger">{error}</span>}
+            <div className="flex gap-2">
+              {onCancel && (
+                <button className="btn" onClick={onCancel}>
+                  cancel
+                </button>
+              )}
+              <button
+                className="btn btn-primary"
+                onClick={submit}
+                disabled={saving}
+                title={!name ? "name your session first" : undefined}
+              >
+                {saving ? "saving…" : initial ? "update" : "finish"}
               </button>
-            )}
-            <button className="btn btn-primary" onClick={submit} disabled={saving || !name}>
-              {saving ? "saving…" : initial ? "update" : "finish"}
-            </button>
+            </div>
           </div>
         </div>
       </div>
