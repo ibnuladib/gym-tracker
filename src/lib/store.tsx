@@ -434,14 +434,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 /* -------------------------------------------------------------------------- */
 
 const DEFAULT_EXERCISES: Exercise[] = [
-  { id: "ex_press_iso", name: "Press isolateral", defaultUnit: "kg", category: "push" },
-  { id: "ex_fly", name: "Fly", defaultUnit: "plate", category: "push" },
-  { id: "ex_lat_raise", name: "Lateral raise", defaultUnit: "kg", category: "push" },
-  { id: "ex_tri_ext", name: "Tricep extension", defaultUnit: "plate", category: "push" },
-  { id: "ex_lat_pull", name: "Lat pulldown", defaultUnit: "plate", category: "pull" },
-  { id: "ex_low_row", name: "Low row", defaultUnit: "kg", category: "pull" },
-  { id: "ex_spider_curl", name: "Spider curl", defaultUnit: "kg", category: "pull" },
-];
+  { id: 'bench_press', name: 'Bench Press', defaultUnit: 'kg', category: 'chest' },
+  { id: 'squat', name: 'Squat', defaultUnit: 'kg', category: 'legs' },
+  { id: 'deadlift', name: 'Deadlift', defaultUnit: 'kg', category: 'back' },
+  { id: 'overhead_press', name: 'Overhead Press', defaultUnit: 'kg', category: 'shoulders' },
+  { id: 'pull_up', name: 'Pull Up', defaultUnit: 'bw', category: 'back' },
+  { id: 'push_up', name: 'Push Up', defaultUnit: 'bw', category: 'chest' },
+  { id: 'biceps_curl', name: 'Biceps Curl', defaultUnit: 'kg', category: 'arms' },
+  { id: 'triceps_extension', name: 'Triceps Extension', defaultUnit: 'kg', category: 'arms' },
+]; // preloaded with common exercises
 
 const DEFAULT_TEMPLATES: never[] = []; // no prebuilt templates — users build their own
 

@@ -25,7 +25,7 @@ export default function TemplatesPage() {
     <div className="wpage">
       <div className="tpl-head">
         <div>
-          <div className="stamp">templates</div>
+          <div className="stamp">routines</div>
           <div className="tpl-head-h num">
             {templates.length} saved
           </div>
@@ -47,9 +47,9 @@ export default function TemplatesPage() {
         />
       ) : templates.length === 0 ? (
         <div className="tpl-empty">
-          <div className="tpl-empty-title">no templates yet</div>
+          <div className="tpl-empty-title">no routines yet</div>
           <div className="tpl-empty-sub">
-            a template is a saved set of exercises with default sets, reps,
+            a routine is a saved set of exercises with default sets, reps,
             and weight — tap it on a new session to start fast.
           </div>
           <button onClick={newTemplate} className="btn btn-primary tpl-empty-cta">
@@ -84,7 +84,7 @@ export default function TemplatesPage() {
                 </div>
               </button>
               <div className="tpl-card-actions">
-                <Link href={`/workout/new?from=tpl_${t.id}`} className="tpl-card-run">
+                <Link href={`/workout/new?tpl=${t.id}`} className="tpl-card-run">
                   start →
                 </Link>
                 <button

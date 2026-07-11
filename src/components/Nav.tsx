@@ -7,9 +7,8 @@ type IconProps = React.SVGProps<SVGSVGElement>;
 
 const items = [
   { href: "/", label: "Today", icon: IconToday },
+  { href: "/templates", label: "Routines", icon: IconTemplate },
   { href: "/history", label: "History", icon: IconList },
-  { href: "/heatmap", label: "Heat", icon: IconGrid },
-  { href: "/progress", label: "Progress", icon: IconChart },
 ] as const;
 
 export function Nav() {
@@ -44,10 +43,7 @@ export function Nav() {
                 </span>
                 <span className={active ? "text-fg" : ""}>{label}</span>
                 {active && (
-                  <span
-                    aria-hidden
-                    className="absolute -top-px h-px w-5 bg-accent"
-                  />
+                  <span aria-hidden className="absolute -top-px h-px w-5 bg-accent" />
                 )}
               </Link>
             </li>
@@ -69,11 +65,7 @@ export function Nav() {
               <span>finish</span>
             </button>
           ) : (
-            <Link
-              href="/workout/new"
-              aria-label="Log a workout"
-              className="nav-add"
-            >
+            <Link href="/workout/new" aria-label="Log a workout" className="nav-add">
               <span className="nav-add-plus" aria-hidden>
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
                   <path d="M12 5v14M5 12h14" />
@@ -106,21 +98,11 @@ function IconList(p: IconProps) {
     </svg>
   );
 }
-function IconGrid(p: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" {...p}>
-      <rect x="3" y="3" width="7" height="7" rx="0.5" />
-      <rect x="14" y="3" width="7" height="7" rx="0.5" />
-      <rect x="3" y="14" width="7" height="7" rx="0.5" />
-      <rect x="14" y="14" width="7" height="7" rx="0.5" />
-    </svg>
-  );
-}
-function IconChart(p: IconProps) {
+function IconTemplate(p: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <path d="M3 4v17h17" />
-      <path d="M7 15l4-6 4 4 5-7" />
+      <rect x="4" y="4" width="16" height="16" rx="1" />
+      <path d="M8 9h8M8 13h8M8 17h5" />
     </svg>
   );
 }

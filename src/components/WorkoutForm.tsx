@@ -9,7 +9,7 @@ import { toKg } from "@/lib/units";
 
 interface Props {
   templates: Template[];
-  exercises: { name: string; defaultUnit: Unit }[];
+  suggestions: { name: string; lastUnit: Unit }[];
   initial?: Workout;
   onSubmit: (w: Workout) => Promise<void> | void;
   onCancel?: () => void;
@@ -19,22 +19,20 @@ function blankSet(unit: Unit, weight = 0, reps = 0): SetEntry {
   return { weight, unit, reps };
 }
 
-export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel }: Props) {
+export function WorkoutForm({ templates, suggestions, initial, onSubmit, onCancel }: Props) {
   const [date, setDate] = useState(initial?.date ?? today());
   const [durationMin, setDurationMin] = useState<number | undefined>(initial?.durationMin);
   const [notes, setNotes] = useState(initial?.notes ?? "");
-  const [logs, setLogs] = useState<ExerciseLog[]>(() => initial?.exercises ?? []);
   const [showNotes, setShowNotes] = useState(Boolean(initial?.notes));
   const [showMeta, setShowMeta] = useState(false);
-  const [activeEx, setActiveEx] = useState<number | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [logs, setLogs] = useState<ExerciseLog[]>(() => initial?.exercises ?? []);
+  const [sheetFor, setSheetFor] = useState<"add" | { index: number } | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Open the sheet on a fresh workout so the user picks the first exercise.
-  // On edit, leave the existing logs alone.
   useEffect(() => {
-    if (!initial) setSheetOpen(true);
+    if (!initial) setSheetFor("add");
   }, [initial]);
 
   // The nav's "finish" button dispatches this event.
@@ -51,30 +49,28 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
     const t = templates.find((x) => x.id === tplId);
     if (!t) return;
     setLogs(
-      t.items.map((it) => {
-        const ex = exercises.find((e) => e.name.toLowerCase() === it.exerciseName.toLowerCase());
-        const unit = it.defaultUnit ?? ex?.defaultUnit ?? "kg";
-        return {
-          name: it.exerciseName,
-          sets: [blankSet(unit, it.defaultWeight ?? 0, it.defaultReps ?? 0)],
-        };
-      })
+      t.items.map((it) => ({
+        name: it.exerciseName,
+        sets: [blankSet(it.defaultUnit ?? "kg", it.defaultWeight ?? 0, it.defaultReps ?? 0)],
+      }))
     );
   };
 
   const addExercise = (name: string, unit: Unit) => {
     if (logs.some((l) => l.name.toLowerCase() === name.toLowerCase())) {
       const idx = logs.findIndex((l) => l.name.toLowerCase() === name.toLowerCase());
-      setActiveEx(idx);
+      setLogs((prev) => prev.map((l, i) => (i === idx ? { ...l, sets: [...l.sets, blankSet(l.sets.at(-1)?.unit ?? unit, 0, 0)] } : l)));
       return;
     }
     setLogs([...logs, { name, sets: [blankSet(unit, 0, 0)] }]);
-    setActiveEx(logs.length);
+  };
+
+  const renameExercise = (i: number, name: string, unit: Unit) => {
+    setLogs(logs.map((l, idx) => (idx === i ? { ...l, name, sets: l.sets.map((s) => ({ ...s, unit })) } : l)));
   };
 
   const removeExercise = (i: number) => {
     setLogs(logs.filter((_, idx) => idx !== i));
-    if (activeEx === i) setActiveEx(null);
   };
 
   const updateSet = (i: number, s: number, next: SetEntry) => {
@@ -93,14 +89,14 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
     );
   };
 
-  // "Log & next" — the dominant gesture. Marks the current set done
-  // and immediately queues the next one with the same weight/reps.
+  // "Log & next" — the dominant gesture. Copies the current set and
+  // queues the next one with the same weight/reps.
   const commitSet = (i: number, s: number) => {
     setLogs((prev) =>
       prev.map((l, idx) => {
         if (idx !== i) return l;
         const cur = l.sets[s];
-        if (!cur || (cur.weight === 0 && cur.reps === 0)) return l; // empty
+        if (!cur || (cur.weight === 0 && cur.reps === 0)) return l;
         const next: SetEntry = { ...cur };
         return { ...l, sets: [...l.sets, next] };
       })
@@ -120,7 +116,6 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
       }, 0),
     0
   );
-
   const totalSets = logs.reduce((a, l) => a + l.sets.length, 0);
 
   const finish = async () => {
@@ -135,7 +130,6 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
     try {
       const w: Workout = {
         id: initial?.id ?? nanoid(10),
-        // Default the name to the first exercise — easy to rename later.
         name: initial?.name || realLogs[0].name,
         date,
         durationMin,
@@ -152,80 +146,83 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
     }
   };
 
+  const sheetName =
+    sheetFor === "add"
+      ? undefined
+      : sheetFor
+        ? logs[sheetFor.index]?.name
+        : undefined;
+  const sheetUnit =
+    sheetFor === "add"
+      ? "kg"
+      : sheetFor
+        ? logs[sheetFor.index]?.sets.at(-1)?.unit ?? "kg"
+        : "kg";
+
   return (
     <div className="wform">
       {templates.length > 0 && (
         <div className="wform-tpl">
           {templates.map((t) => (
-            <button
-              key={t.id}
-              className="chip"
-              onClick={() => applyTemplate(t.id)}
-            >
+            <button key={t.id} className="chip" onClick={() => applyTemplate(t.id)}>
               {t.name}
             </button>
           ))}
         </div>
       )}
 
-      {logs.map((log, i) => {
-        const isActive = activeEx === i || (activeEx === null && i === 0);
-        return (
-          <section
-            key={i}
-            className={"exercise " + (isActive ? "is-active" : "")}
-            onClick={() => setActiveEx(i)}
-          >
-            <header className="exercise-head">
-              <div className="exercise-name">{log.name}</div>
-              <div className="exercise-meta num">
-                {log.sets.length} {log.sets.length === 1 ? "set" : "sets"}
-              </div>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeExercise(i);
-                }}
-                className="exercise-rm"
-                aria-label={`remove ${log.name}`}
-              >
-                ×
-              </button>
-            </header>
-
-            <div className="exercise-sets">
-              {log.sets.map((s, sIdx) => (
-                <SetRow
-                  key={sIdx}
-                  set={s}
-                  index={sIdx}
-                  done={sIdx < log.sets.length - 1}
-                  onChange={(next) => updateSet(i, sIdx, next)}
-                  onRemove={() => removeSet(i, sIdx)}
-                  onCommit={sIdx === log.sets.length - 1 ? () => commitSet(i, sIdx) : undefined}
-                />
-              ))}
-            </div>
-
+      {logs.map((log, i) => (
+        <section key={i} className="exercise">
+          <header className="exercise-head">
             <button
               type="button"
-              className="exercise-add"
-              onClick={(e) => {
-                e.stopPropagation();
-                addSet(i);
-              }}
+              className="exercise-name"
+              onClick={() => setSheetFor({ index: i })}
+              aria-label={`rename ${log.name}`}
             >
-              + add set
+              {log.name}
             </button>
-          </section>
-        );
-      })}
+            <div className="exercise-meta num">
+              {log.sets.length} {log.sets.length === 1 ? "set" : "sets"}
+            </div>
+            <button
+              type="button"
+              onClick={() => removeExercise(i)}
+              className="exercise-rm"
+              aria-label={`remove ${log.name}`}
+            >
+              ×
+            </button>
+          </header>
+
+          <div className="exercise-sets">
+            {log.sets.map((s, sIdx) => (
+              <SetRow
+                key={sIdx}
+                set={s}
+                index={sIdx}
+                done={sIdx < log.sets.length - 1}
+                onChange={(next) => updateSet(i, sIdx, next)}
+                onRemove={() => removeSet(i, sIdx)}
+                onCommit={sIdx === log.sets.length - 1 ? () => commitSet(i, sIdx) : undefined}
+              />
+            ))}
+          </div>
+
+          <button
+            type="button"
+            className="exercise-add"
+            onClick={() => addSet(i)}
+          >
+            + add set
+          </button>
+        </section>
+      ))}
 
       <button
         type="button"
         className="wform-addex"
-        onClick={() => setSheetOpen(true)}
+        onClick={() => setSheetFor("add")}
       >
         <span className="wform-addex-plus">+</span>
         <span>add exercise</span>
@@ -301,11 +298,19 @@ export function WorkoutForm({ templates, exercises, initial, onSubmit, onCancel 
       )}
 
       <ExerciseSheet
-        open={sheetOpen}
-        onClose={() => setSheetOpen(false)}
-        exercises={exercises}
+        open={sheetFor !== null}
+        onClose={() => setSheetFor(null)}
+        suggestions={suggestions}
         taken={logs.map((l) => l.name)}
-        onPick={addExercise}
+        initialName={sheetName}
+        initialUnit={sheetUnit}
+        onPick={(name, unit) => {
+          if (sheetFor === "add") {
+            addExercise(name, unit);
+          } else if (sheetFor) {
+            renameExercise(sheetFor.index, name, unit);
+          }
+        }}
       />
     </div>
   );

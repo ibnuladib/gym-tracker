@@ -28,23 +28,31 @@ export default function HistoryPage() {
 
   return (
     <div className="space-y-5">
-      <header>
-        <h1 className="font-display text-2xl font-light tracking-tight text-fg">history</h1>
-      </header>
-      <input
-        className="input"
-        placeholder="filter by exercise, name, date…"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
+      <div className="tpl-head">
+        <div>
+          <div className="stamp">history</div>
+          <div className="tpl-head-h num">
+            {workouts.length} {workouts.length === 1 ? "session" : "sessions"}
+          </div>
+        </div>
+        <Link href="/workout/new" className="btn btn-primary">+ new</Link>
+      </div>
+
+      {workouts.length > 3 && (
+        <input
+          className="input"
+          placeholder="filter by exercise, name, date…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+      )}
+
       {filtered.length === 0 && (
         <div className="card text-sm text-fg-dim">no sessions match.</div>
       )}
       {filtered.map((g) => (
         <section key={g.key} className="space-y-2">
-          <h2 className="stamp sticky top-12 z-10 -mx-4 bg-bg/85 px-4 py-1 backdrop-blur sm:-mx-6 sm:px-6">
-            week of {g.start} → {g.end}
-          </h2>
+          <h2 className="stamp">{g.start} → {g.end}</h2>
           <ul className="space-y-1.5">
             {g.workouts.map((w) => (
               <WorkoutRow key={w.id} w={w} onDelete={() => deleteWorkout(w.id)} />
@@ -64,43 +72,35 @@ function WorkoutRow({ w, onDelete }: { w: Workout; onDelete: () => void }) {
   );
   return (
     <li className="card">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <div className="truncate text-sm font-medium text-fg">
-            <Link href={`/workout/${w.id}`} className="transition-colors hover:text-accent-fg">
-              {w.name}
-            </Link>
+      <Link href={`/workout/${w.id}`} className="block">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <div className="truncate text-sm font-medium text-fg">{w.name}</div>
+            <div className="num text-2xs text-fg-faint">
+              {w.date} · {w.exercises.length} ex · {totalSets} sets · {Math.round(totalVol).toLocaleString()}kg
+            </div>
           </div>
-          <div className="num text-2xs text-fg-faint">
-            {w.date} · {w.exercises.length} ex · {totalSets} sets · {Math.round(totalVol).toLocaleString()}kg
-          </div>
+          <span className="text-2xs text-fg-dim">edit →</span>
         </div>
-        <Link href={`/workout/new?repeat=${w.id}`} className="text-2xs text-fg-dim transition-colors hover:text-accent-fg">
-          ↻ repeat
-        </Link>
-      </div>
-      <details className="mt-2">
-        <summary className="cursor-pointer text-2xs text-fg-dim transition-colors hover:text-fg" style={{ letterSpacing: "0.14em" }}>
-          show sets
-        </summary>
-        <div className="mt-2 space-y-2">
-          {w.exercises.map((ex, i) => (
-            <div key={i} className="text-xs">
-              <div className="text-fg">{ex.name}</div>
-              <div className="mt-1 flex flex-wrap gap-1.5 text-fg-dim">
-                {ex.sets.map((s, j) => (
-                  <span key={j} className="chip">
-                    {formatWeight(s)} × {s.reps}
-                  </span>
-                ))}
-              </div>
+        <div className="mt-2 space-y-1.5">
+          {w.exercises.slice(0, 3).map((ex, i) => (
+            <div key={i} className="text-2xs text-fg-dim truncate">
+              <span className="text-fg-muted">{ex.name}</span>{" "}
+              {ex.sets.map((s) => `${formatWeight(s)}×${s.reps}`).join("  ·  ")}
             </div>
           ))}
+          {w.exercises.length > 3 && (
+            <div className="text-2xs text-fg-faint">+{w.exercises.length - 3} more</div>
+          )}
         </div>
-        <button onClick={onDelete} className="mt-3 text-2xs text-danger transition-colors hover:text-danger-fg">
-          delete
-        </button>
-      </details>
+      </Link>
+      <button
+        onClick={onDelete}
+        className="mt-2 text-2xs text-fg-faint transition-colors hover:text-danger"
+        aria-label={`delete ${w.name}`}
+      >
+        delete
+      </button>
     </li>
   );
 }

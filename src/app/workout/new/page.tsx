@@ -18,32 +18,42 @@ function NewWorkoutInner() {
   const router = useRouter();
   const params = useSearchParams();
   const repeatId = params.get("repeat");
-  const { templates, exercises, workouts, saveWorkout } = useStore();
+  const templateId = params.get("tpl");
+  const { templates, workouts, saveWorkout } = useStore();
   const [initial, setInitial] = useState<Workout | undefined>(undefined);
 
   useEffect(() => {
-    if (!repeatId) return;
-    const w = workouts.find((x) => x.id === repeatId);
-    if (w) {
-      const d = new Date();
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      const today = `${y}-${m}-${day}`;
-      setInitial({ ...w, id: "", date: today, createdAt: Date.now(), updatedAt: Date.now() });
+    if (repeatId) {
+      const w = workouts.find((x) => x.id === repeatId);
+      if (w) {
+        const today = isoToday();
+        setInitial({ ...w, id: "", date: today, createdAt: Date.now(), updatedAt: Date.now() });
+      }
+    } else if (templateId) {
+      const t = templates.find((x) => x.id === templateId);
+      if (t) {
+        setInitial({
+          id: "",
+          name: t.name,
+          date: isoToday(),
+          exercises: t.items.map((it) => ({
+            name: it.exerciseName,
+            sets: [{ weight: it.defaultWeight ?? 0, unit: it.defaultUnit ?? "kg", reps: it.defaultReps ?? 0 }],
+          })),
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+      }
     }
-  }, [repeatId, workouts]);
+  }, [repeatId, templateId, workouts, templates]);
 
-  const exNames = useMemo(
-    () => exercises.map((e) => ({ name: e.name, defaultUnit: e.defaultUnit })),
-    [exercises]
-  );
+  const suggestions = useMemo(() => buildSuggestions(workouts), [workouts]);
 
   return (
     <div className="wpage">
       <WorkoutForm
         templates={templates}
-        exercises={exNames}
+        suggestions={suggestions}
         initial={initial}
         onSubmit={async (w) => {
           await saveWorkout(w);
@@ -53,4 +63,28 @@ function NewWorkoutInner() {
       />
     </div>
   );
+}
+
+function buildSuggestions(workouts: { exercises: { name: string; sets: { unit: "kg" | "lb" | "plate" | "bw" }[] }[] }[]) {
+  const m = new Map<string, { name: string; lastUnit: "kg" | "lb" | "plate" | "bw"; rank: number }>();
+  let rank = 0;
+  // Walk backwards through workouts (most recent first) so the latest unit wins.
+  for (let i = workouts.length - 1; i >= 0; i--) {
+    const w = workouts[i];
+    for (const e of w.exercises) {
+      const key = e.name.toLowerCase();
+      if (!m.has(key)) {
+        m.set(key, { name: e.name, lastUnit: e.sets.at(-1)?.unit ?? "kg", rank: rank++ });
+      }
+    }
+  }
+  return [...m.values()].sort((a, b) => a.rank - b.rank).map(({ name, lastUnit }) => ({ name, lastUnit }));
+}
+
+function isoToday() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }

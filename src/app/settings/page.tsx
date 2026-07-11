@@ -3,7 +3,6 @@
 import { useRef, useState } from "react";
 import { useStore } from "@/lib/store";
 import { downloadBackup, readBackupFile } from "@/lib/io";
-import { BackLink } from "@/components/BackLink";
 
 export default function SettingsPage() {
   const { cloudEnabled, user, signInGoogle, signInAnon, signOut, exportBackup, importBackup } = useStore();
@@ -11,11 +10,11 @@ export default function SettingsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <BackLink href="/" />
-        <h1 className="font-display text-2xl font-light tracking-tight text-fg">settings</h1>
-        <span className="w-10" />
+    <div className="wpage">
+      <div className="tpl-head">
+        <div>
+          <div className="stamp">settings</div>
+        </div>
       </div>
 
       <section className="card space-y-3">

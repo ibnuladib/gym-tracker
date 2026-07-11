@@ -9,7 +9,7 @@ import type { Workout } from "@/lib/types";
 export default function EditWorkoutPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
-  const { workouts, templates, exercises, saveWorkout, deleteWorkout } = useStore();
+  const { workouts, templates, saveWorkout, deleteWorkout } = useStore();
   const [initial, setInitial] = useState<Workout | undefined>(undefined);
 
   useEffect(() => {
@@ -17,10 +17,7 @@ export default function EditWorkoutPage() {
     setInitial(w);
   }, [params.id, workouts]);
 
-  const exNames = useMemo(
-    () => exercises.map((e) => ({ name: e.name, defaultUnit: e.defaultUnit })),
-    [exercises]
-  );
+  const suggestions = useMemo(() => buildSuggestions(workouts), [workouts]);
 
   if (!initial) {
     return <div className="card text-sm text-fg-dim">loading…</div>;
@@ -30,7 +27,7 @@ export default function EditWorkoutPage() {
     <div className="wpage">
       <WorkoutForm
         templates={templates}
-        exercises={exNames}
+        suggestions={suggestions}
         initial={initial}
         onSubmit={async (w) => {
           await saveWorkout(w);
@@ -51,4 +48,19 @@ export default function EditWorkoutPage() {
       </button>
     </div>
   );
+}
+
+function buildSuggestions(workouts: { exercises: { name: string; sets: { unit: "kg" | "lb" | "plate" | "bw" }[] }[] }[]) {
+  const m = new Map<string, { name: string; lastUnit: "kg" | "lb" | "plate" | "bw"; rank: number }>();
+  let rank = 0;
+  for (let i = workouts.length - 1; i >= 0; i--) {
+    const w = workouts[i];
+    for (const e of w.exercises) {
+      const key = e.name.toLowerCase();
+      if (!m.has(key)) {
+        m.set(key, { name: e.name, lastUnit: e.sets.at(-1)?.unit ?? "kg", rank: rank++ });
+      }
+    }
+  }
+  return [...m.values()].sort((a, b) => a.rank - b.rank).map(({ name, lastUnit }) => ({ name, lastUnit }));
 }
